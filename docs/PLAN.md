@@ -68,10 +68,18 @@ Done so far (8 Oct 2026):
 Still open: **Owner** Cloudflare connection, the `*.pages.dev` check, and the real-microphone check on Chrome and Safari over HTTPS (steps in `docs/DEPLOY-DEMO.md`). Nothing in the demo has been seen in Safari or Firefox.
 ## M4 · Acceptance
 
-- [ ] Work through SPEC §16 and tick each item here with a short note.
-- [ ] Side-by-side with `prototype/noui-orb-prototype.html`: same states, same feel. Record any deliberate differences in CHANGELOG.
-- [ ] Playwright: gesture peaks at a throttled 15 fps within 10% of 60 fps.
-- [ ] README: install (`npm i @nouisi/orb`), quick start, API table, events, the conductor example from SPEC §12, a link to https://noui.si/lab/orb/, a short GIF or video of the orb.
+- [x] Work through SPEC §16 and tick each item here with a short note.
+- [x] Side-by-side with `prototype/noui-orb-prototype.html`: same states, same feel. Record any deliberate differences in CHANGELOG.
+- [x] Playwright: gesture peaks at a throttled 15 fps within 10% of 60 fps.
+- [x] README: install (`npm i @nouisi/orb`), quick start, API table, events, the conductor example from SPEC §12, a link to https://noui.si/lab/orb/, a short GIF or video of the orb.
+
+
+Done 8 Oct 2026. Notes:
+
+- SPEC §16 has a status line per item. Two are **not** ticked: the live-microphone latency and platforms (works in Chrome and Safari per the owner, 50 ms unmeasured, iOS unconfirmed), and the hand-off with the approved artwork (waits for M6).
+- The side-by-side is a statistical comparison, not a pixel diff. Deliberate differences from the prototype are listed in CHANGELOG.
+- README: install, quick start, attributes, properties, methods, events, theming, accessibility, microphone, the conductor example, framework notes, the live demo link and an animated GIF (`docs/media/orb.gif`, regenerate with `node scripts/record-gif.mjs`).
+- Writing the acceptance tests found two bugs in the tests themselves (not the component): a measurement read after the state had changed, and a ring angle wrapping at 360.
 
 ## M5 · First release
 

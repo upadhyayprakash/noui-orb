@@ -514,19 +514,19 @@ Keep §5–§10 as the shared contract. Port the shader to Metal (iOS) and AGSL 
 
 ## 16. Acceptance criteria
 
-- [ ] All six states match the prototype side by side at 60 fps and at a throttled 15 fps.
-- [ ] Gesture peaks at 15 fps are within 10% of those at 60 fps (springs sub-stepped).
-- [ ] With a live microphone in Chrome and Safari (macOS and iOS), listening reacts within 50 ms of speech onset.
-- [ ] Revoking microphone permission or unplugging the device fires `orb-input-silent` and doesn't throw.
-- [ ] `interrupt` during `speaking` switches to `listening` within one frame.
-- [ ] The ring never shows determinate fill without `progress`.
-- [ ] Intro and outro land the orb exactly on the o (within 1 px at 640 px box size) with the approved artwork.
-- [ ] Reduced motion: no springs, no lean, crossfade intro, no motion faster than 0.35×.
-- [ ] Off-screen and hidden-tab rendering uses no GPU time.
-- [ ] The CSS fallback works with WebGL disabled.
-- [ ] Light and dark themes: the ring and mark ink adapt; the orb colours stay constant.
+Status 8 Oct 2026. Automated checks are in `tests/e2e/acceptance.spec.ts` and `tests/e2e/behaviour.spec.ts`; all rendering was in headless Chromium with software GL unless a note says otherwise.
 
----
+- [x] All six states match the prototype side by side at 60 fps and at a throttled 15 fps. *Both pages ran in the same browser, driven by the same audio file. Mean orb colour is within 7 of 255 per channel, orb width within 0.013 of the stage and ring presence within 0.00, except `working` at 60 fps (0.17, the two step loops are out of phase). The tests allow 24 (the prototype alone varied that much between runs for `thinking`), 0.03 and 0.2. This is a statistical comparison, not a pixel diff: the noise field moves, so two runs are never identical frames. A human side-by-side look is still worth doing.*
+- [x] Gesture peaks at 15 fps are within 10% of those at 60 fps (springs sub-stepped). *Measured on the rendered transform for nod, shake, huh and hop. The unit tests also check the spring trajectories match at both rates.*
+- [ ] With a live microphone in Chrome and Safari (macOS and iOS), listening reacts within 50 ms of speech onset. *The owner confirmed on 8 Oct that the microphone works in Chrome and Safari on the deployed demo. The 50 ms figure has not been measured, and iOS was not stated.*
+- [x] Revoking microphone permission or unplugging the device fires `orb-input-silent` and doesn't throw. *Owner-tested on the deployed demo (revocation shows the warning). A test also ends a live stream's track and checks the event, `seconds: 0` and the detach.*
+- [x] `interrupt` during `speaking` switches to `listening` within one frame. *It switches synchronously, in the same call.*
+- [x] The ring never shows determinate fill without `progress`. *`working` without `progress` shows only the 64° arc and empty segments.*
+- [ ] Intro and outro land the orb exactly on the o (within 1 px at 640 px box size) with the approved artwork. *Verified within 1 px at 640 px with the placeholder artwork. Still open until the approved artwork is in (PLAN M6).*
+- [x] Reduced motion: no springs, no lean, crossfade intro, no motion faster than 0.35×. *Flow and ring spin measured at 0.35× of normal, gestures rejected, lean and springs at 0, intro 200 ms.*
+- [x] Off-screen and hidden-tab rendering uses no GPU time. *Zero WebGL draw calls while scrolled off-screen and while `document.hidden`, and drawing resumes afterwards. The animation loop does not even run.*
+- [x] The CSS fallback works with WebGL disabled. *`orb-fallback` fires, the fallback orb follows state scale and saturation.*
+- [x] Light and dark themes: the ring and mark ink adapt; the orb colours stay constant. *Checked on computed styles in both schemes.*
 
 ## 17. Open questions
 

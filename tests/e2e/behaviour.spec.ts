@@ -176,8 +176,9 @@ test("a finished progress fires hop and the ring fades out", async ({ page }) =>
     orb.addEventListener("orb-gesture", (e: CustomEvent) => ev.push(`${e.detail.name}:${e.detail.phase}`));
     orb.state = "working";
     orb.progress = { steps: 3, done: 2, current: 0.5 };
-    await new Promise((r) => setTimeout(r, 600));
-    const ringBefore = getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity;
+    const ringNow = () => Number(getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity);
+    for (let i = 0; i < 400 && ringNow() <= 0.9; i++) await new Promise((r) => setTimeout(r, 25)); // fade-in
+    const ringBefore = ringNow();
     orb.progress = { steps: 3, done: 3 };
     // Poll rather than sleep: a slow runner advances animation time slower than the wall clock.
     const ring = () => Number(getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity);
