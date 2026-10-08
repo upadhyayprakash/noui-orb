@@ -65,7 +65,7 @@ Done so far (8 Oct 2026):
 - `build:demo` fails if the bundle doesn't register `<noui-orb>`. This caught a real bug: the demo's source import was tree-shaken away because `sideEffects` only listed `dist/index.js`.
 - 10 demo tests (states, a full turn with the card, step aside and recall, tuning and Copy settings, simulated voice, an audio file, a fake microphone device, ending and restarting the session).
 
-Still open: **Owner** Cloudflare connection, the `*.pages.dev` check, and the real-microphone check on Chrome and Safari over HTTPS (steps in `docs/DEPLOY-DEMO.md`). Nothing in the demo has been seen in Safari or Firefox.
+M3 complete (8 Oct 2026): the owner connected the repo to Cloudflare Pages, checked the real microphone on Chrome and Safari, and the demo is live at `noui.si/lab/orb/` through the site's proxy (the move of noui.si to Cloudflare is recorded in `docs/SITE-MIGRATION.md` and `docs/OPERATIONS.md`). Firefox is untested. The demo also has Open Graph tags and a share image (`demo/public/og.png`).
 ## M4 · Acceptance
 
 - [x] Work through SPEC §16 and tick each item here with a short note.

@@ -33,4 +33,4 @@ export async function onRequest({ request }) {
 }
 ```
 
-The demo is built with Vite `base: "/lab/orb/"` and its files sit at `/lab/orb/...`, so the path is identical on both sides and no rewriting is needed. This function is a starting point and **has not been run**: check on the site's preview URL that `/lab/orb/`, `/lab/orb/assets/...` and `/lab/orb` all work, that the headers above come through, and that the microphone still works.
+The demo is built with Vite `base: "/lab/orb/"` and its files sit at `/lab/orb/...`, so the path is identical on both sides and no rewriting is needed. This function is in use (site repo, `functions/lab/orb/[[path]].js`) and was verified on a preview build and on the live domain: `/lab/orb/`, assets and the bare `/lab/orb` redirect work, the headers come through, and the microphone works. If the demo ever looks stale, check the Git connection of the `noui-orb-demo` project first (see `docs/OPERATIONS.md`).

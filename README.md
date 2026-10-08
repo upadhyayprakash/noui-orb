@@ -4,7 +4,7 @@
 
 ![The noui logo becomes the orb, which listens, thinks, works through three steps and speaks](https://raw.githubusercontent.com/upadhyayprakash/noui-orb/main/docs/media/orb.gif)
 
-**Try it:** https://noui-orb-demo.pages.dev/lab/orb/ (it will also live at https://noui.si/lab/orb/). The demo has a Get started walkthrough and runs on the public API only.
+**Try it:** https://noui.si/lab/orb/ (also reachable at https://noui-orb-demo.pages.dev/lab/orb/). The demo has a Get started walkthrough and runs on the public API only.
 
 **Status: early release (0.1.x).** It is a scripted prototype: it draws and reacts to audio, it does not understand speech. Your app listens and thinks and tells the orb what is happening. Tested in Chrome and Safari; not yet in Firefox. The full reference is [`docs/SPEC.md`](docs/SPEC.md).
 

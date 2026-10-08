@@ -61,3 +61,9 @@ Prepared in the site repo on branch `cloudflare-pages` (not pushed): `functions/
 8. **Unpublish GitHub Pages:** repo Settings → Pages. Delete `.github/workflows/deploy.yml` and `public/CNAME` in a commit.
 9. **Make the repo private** (Settings → Danger zone → Change visibility). The Pages project keeps building because the Cloudflare GitHub app has access. Check that a push to `main` still deploys.
 10. **Rollback:** until step 8, pointing the nameservers back at the OpusDNS ones restores the old setup within the record TTL.
+
+## Result (8 to 9 Oct 2026)
+
+Done: steps 1 to 8 of the runbook, and 9a (the GitHub Pages workflow and `CNAME` removed from the site repo, the merged `cloudflare-pages` branch deleted). `noui.si`, `www.noui.si` and `noui.si/lab/orb/` are served by Cloudflare Pages; HTTP redirects to HTTPS; the demo proxy works on the live domain including the microphone.
+
+Left for the owner: **9b** unpublish GitHub Pages once the stale-DNS window is clearly over, then **10** make the `noui` repo private. See `docs/OPERATIONS.md` section 10 for the current status table, the rollback and the lessons learned.
