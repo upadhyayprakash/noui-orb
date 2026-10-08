@@ -318,7 +318,7 @@ GitHub `upadhyayprakash/noui-orb`, public, MIT licence (the noui name and mark a
 | `demo/` | The public demo page (`index.html`, `main.ts`, `snippets.ts`, `style.css`) and `demo/harness/`, a bare page the tests drive |
 | `pages/` | Cloudflare Pages files for the demo (`_headers`, `_redirects`, `404.html`) |
 | `demo/public/og.png` | The 1200 x 630 share image for link previews |
-| `scripts/` | `size.mjs` (size budget), `copy-pages-files.mjs` (post-build checks and copy), `record-gif.mjs` (regenerates `docs/media/orb.gif`), `make-og-image.mjs` (regenerates `demo/public/og.png`) |
+| `scripts/` | `size.mjs` (size budget), `copy-pages-files.mjs` (post-build checks and copy), `record-gif.mjs` (regenerates `docs/media/orb.gif`), `make-og-image.mjs` (regenerates `demo/public/og.png`; use `STYLE=voice`) |
 | `vite.config.ts` | Library build (outputs `dist/`) |
 | `vite.demo.config.ts` | Demo build (`base: "/lab/orb/"`, outputs `demo-dist/lab/orb/`) |
 | `wrangler.jsonc` | Cloudflare Pages settings for the demo |
@@ -512,7 +512,7 @@ Incidents marked **seen** actually happened in this project.
 
 **Add a header or a redirect.** Site: edit `public/_headers` or `public/_redirects`. Demo: `pages/_headers` or `pages/_redirects` in noui-orb. Push, then verify with `curl -sI <url>`. Headers do not apply to responses produced by Functions.
 
-**Change how a link looks when shared (LinkedIn, WhatsApp, X).** The tags are in the `<head>` of the page: `demo/index.html` for the demo, `index.html` in the site repo. The demo's image is `demo/public/og.png`; regenerate it with `npm run dev` in one terminal and `node scripts/make-og-image.mjs` in another. `npm run build:demo` fails if the tags or the image are missing. Platforms **cache** previews, so after a change refresh them: LinkedIn Post Inspector (`linkedin.com/post-inspector`, enter the URL), Facebook's Sharing Debugger (also refreshes WhatsApp in practice), and for X just post again. A page with no Open Graph tags still gets a basic card from its title and description, but no image.
+**Change how a link looks when shared (LinkedIn, WhatsApp, X).** The tags are in the `<head>` of the page: `demo/index.html` for the demo, `index.html` in the site repo. The demo's image is `demo/public/og.png`; regenerate it with `npm run dev` in one terminal and `STYLE=voice node scripts/make-og-image.mjs` in another (it prints the horizontal centres of the orb, level strip and chips and fails if they differ by more than 1 px; `STYLE=voice-left` is an alternative layout). `npm run build:demo` fails if the tags or the image are missing. Platforms **cache** previews, so after a change refresh them: LinkedIn Post Inspector (`linkedin.com/post-inspector`, enter the URL), Facebook's Sharing Debugger (also refreshes WhatsApp in practice), and for X just post again. A page with no Open Graph tags still gets a basic card from its title and description, but no image.
 
 **Release a new orb version.** See [9](#9-releasing-the-npm-package).
 
