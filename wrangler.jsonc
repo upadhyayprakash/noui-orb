@@ -1,0 +1,7 @@
+{
+  // Cloudflare Pages project for the public demo (https://noui.si/lab/orb/).
+  // Pages treats this file as the source of truth for these fields once it exists.
+  "name": "noui-orb-demo",
+  "pages_build_output_dir": "./demo-dist",
+  "compatibility_date": "2026-10-08"
+}

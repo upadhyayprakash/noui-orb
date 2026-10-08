@@ -14,7 +14,7 @@ import { Envelope } from "./signals/envelope";
 import { STATES, accessibleName, isOrbState } from "./states";
 import { CSS } from "./styles";
 import type {
-  AudioChannelName, DeepPartial, GestureName, Levels, OrbConfig, OrbEventDetails, OrbLevels, OrbProgress, OrbState, Placement,
+  AudioChannelName, DeepPartial, GestureName, Levels, OrbConfig, OrbEventDetails, OrbLevels, OrbProgress, OrbSignal, OrbState, Placement,
 } from "./types";
 
 const GESTURE_NAMES: readonly GestureName[] = ["nod", "shake", "huh", "hop", "interrupt", "emit", "point", "wait"];
@@ -235,6 +235,11 @@ export class NouiOrbElement extends Base {
     this.checkCompletion();
     this.updateA11y();
     this.wake();
+  }
+
+  get levels(): OrbSignal {
+    const e = this.env;
+    return { amp: e.amp, bright: e.bright, bass: e.bass, treble: e.treble, pace: e.pace, paceRate: e.paceRate };
   }
 
   get config(): OrbConfig {

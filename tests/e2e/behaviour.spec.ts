@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const open = async (page: Page, query = "?intro=none") => {
-  await page.goto(query);
+  await page.goto("harness/" + query);
   await page.waitForFunction(() => !!(window as any).orb?.shadowRoot);
 };
 const $ = (page: Page, fn: (orb: any) => unknown) => page.evaluate((src) => new Function("orb", `return (${src})(orb)`)((window as any).orb), fn.toString());
@@ -178,8 +178,10 @@ test("a finished progress fires hop and the ring fades out", async ({ page }) =>
     await new Promise((r) => setTimeout(r, 600));
     const ringBefore = getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity;
     orb.progress = { steps: 3, done: 3 };
-    await new Promise((r) => setTimeout(r, 1800));
-    return { ev, ringBefore: Number(ringBefore), ringAfter: Number(getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity) };
+    // Poll rather than sleep: a slow runner advances animation time slower than the wall clock.
+    const ring = () => Number(getComputedStyle(orb.shadowRoot.querySelector(".ring")).opacity);
+    for (let i = 0; i < 400 && ring() >= 0.05; i++) await new Promise((r) => setTimeout(r, 25));
+    return { ev, ringBefore: Number(ringBefore), ringAfter: ring() };
   });
   expect(r.ev[0]).toBe("hop:start");
   expect(r.ringBefore).toBeGreaterThan(0.9);
@@ -267,7 +269,8 @@ test("input audio: reacts to a live stream, then reports silence and a dead trac
     const loud = orb.env.amp;
 
     gain.gain.value = 0; // the speaker goes quiet
-    await new Promise((r) => setTimeout(r, 4600));
+    // The 4 s counts animation time, which lags the wall clock on a slow runner, so wait for the event.
+    for (let i = 0; i < 600 && silent.length === 0; i++) await new Promise((r) => setTimeout(r, 25));
     const quietEvents = [...silent];
 
     dest.stream.getAudioTracks()[0]!.stop(); // stop() does not fire "ended", so end it the way a device does
@@ -303,6 +306,27 @@ test("output audio drives speaking, and not before the breath is over", async ({
   });
   expect(r.during).toBeLessThan(0.15);
   expect(r.after).toBeGreaterThan(0.3);
+});
+
+test("levels is a read-only snapshot of the smoothed signal", async ({ page }) => {
+  await open(page);
+  const r = await page.evaluate(async () => {
+    const orb = (window as any).orb;
+    const before = orb.levels;
+    orb.state = "listening";
+    const end = performance.now() + 500;
+    while (performance.now() < end) {
+      orb.setLevels({ amp: 0.9, bright: 0.7, bass: 0.5, treble: 0.5 }, "input");
+      await new Promise((r) => setTimeout(r, 16));
+    }
+    let threw = false;
+    try { "use strict"; orb.levels = {}; } catch { threw = true; }
+    return { before, after: orb.levels, keys: Object.keys(orb.levels).sort(), threw };
+  });
+  expect(r.keys).toEqual(["amp", "bass", "bright", "pace", "paceRate", "treble"]);
+  expect(r.before.amp).toBeLessThan(0.1);
+  expect(r.after.amp).toBeGreaterThan(0.8);
+  expect(r.after.bright).toBeGreaterThan(0.55);
 });
 
 test("config merges partially and reads back", async ({ page }) => {
@@ -392,12 +416,10 @@ test("while listening the orb leans toward the pointer, and not otherwise", asyn
 
   await page.evaluate(() => ((window as any).orb.state = "listening"));
   await page.mouse.move(c.x + 301, c.y);
-  await page.waitForTimeout(1200);
-  expect(await $(page, (o) => o.char.leanX)).toBeGreaterThan(0.9);
+  await page.waitForFunction(() => (window as any).orb.char.leanX > 0.9, null, { timeout: 10000 });
 
   await page.mouse.move(c.x - 301, c.y);
-  await page.waitForTimeout(1200);
-  expect(await $(page, (o) => o.char.leanX)).toBeLessThan(-0.9);
+  await page.waitForFunction(() => (window as any).orb.char.leanX < -0.9, null, { timeout: 10000 });
 });
 
 test("a pointer press inside the orb ends wait", async ({ page }) => {

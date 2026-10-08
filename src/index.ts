@@ -7,5 +7,5 @@ if (typeof customElements !== "undefined" && !customElements.get("noui-orb")) {
 
 export { NouiOrbElement };
 export type {
-  GestureName, OrbConfig, OrbEventDetails, OrbLevels, OrbProgress, OrbState, Placement,
+  GestureName, OrbConfig, OrbEventDetails, OrbLevels, OrbProgress, OrbSignal, OrbState, Placement,
 } from "./types";

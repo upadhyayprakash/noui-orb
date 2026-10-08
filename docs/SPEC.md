@@ -92,6 +92,15 @@ interface OrbLevels {   // for hosts that analyse audio themselves (native bridg
   treble?: number;      // 0–1
 }
 
+interface OrbSignal {
+  amp: number;      // 0–1, after reactivity and the attack/release envelope
+  bright: number;   // 0–1
+  bass: number;     // 0–1
+  treble: number;   // 0–1
+  pace: number;     // 0–1, eased
+  paceRate: number; // onsets per second over the last 2 s
+}
+
 interface NouiOrbElement extends HTMLElement {
   state: OrbState;
   placement: Placement;
@@ -123,6 +132,9 @@ interface NouiOrbElement extends HTMLElement {
   /** Logo ↔ orb transitions (§10). */
   intro(): Promise<void>;
   outro(): Promise<void>;
+
+  /** Read-only snapshot of the smoothed signal the orb is currently showing (§7.2). For host meters and debugging. */
+  readonly levels: OrbSignal;
 
   /** Tuning. Partial merge over defaults (§13). Same shape as the prototype's Copy settings JSON. */
   config: Partial<OrbConfig>;

@@ -1,0 +1,2 @@
+# The demo lives under /lab/orb/ (Vite base), so make the bare path work.
+/lab/orb /lab/orb/ 301

@@ -48,15 +48,24 @@ Done 8 Oct 2026. Notes:
 
 ## M3 · Demo at noui.si/lab/orb
 
-- [ ] Rebuild the prototype's control panel in `demo/` on the public API only: states, full turn, signal sources (simulated, audio file, microphone), meters, tuning sliders with Copy settings, character gestures, the sample card, the vocabulary table.
-- [ ] Build with Vite `base: "/lab/orb/"` into `demo-dist/lab/orb/`, so asset paths match the URL path when served from a route.
-- [ ] Deploy the demo as its own Cloudflare Pages project (`wrangler.jsonc` with `pages_build_output_dir: "demo-dist"` in this repo). Serve it at `noui.si/lab/orb/` using option (a) from M0.
-  - Before writing config, check the current Cloudflare docs for: Pages Git integration, `_redirects` and `_headers`, Pages Functions, and custom domains. Prefer Pages Git integration (Cloudflare pulls from GitHub; no secret in this repo). Fall back to a GitHub Action with `wrangler pages deploy` and a `CLOUDFLARE_API_TOKEN` secret scoped to "Cloudflare Pages: Edit" on this account only.
+- [x] Rebuild the prototype's control panel in `demo/` on the public API only: states, full turn, signal sources (simulated, audio file, microphone), meters, tuning sliders with Copy settings, character gestures, the sample card, the vocabulary table.
+- [x] Build with Vite `base: "/lab/orb/"` into `demo-dist/lab/orb/`, so asset paths match the URL path when served from a route.
+- [x] Config for the demo as its own Cloudflare Pages project (`wrangler.jsonc`, `pages/_redirects`, `pages/_headers`, `pages/404.html`, copied into `demo-dist/` by `npm run build:demo`). Serving it at `noui.si/lab/orb/` via option (a) is in `docs/DEPLOY-DEMO.md` and `SITE-MIGRATION.md`; not deployed yet.
+  - Done 8 Oct 2026: checked the current Cloudflare docs for: Pages Git integration, `_redirects` and `_headers`, Pages Functions, and custom domains. Prefer Pages Git integration (Cloudflare pulls from GitHub; no secret in this repo). Fall back to a GitHub Action with `wrangler pages deploy` and a `CLOUDFLARE_API_TOKEN` secret scoped to "Cloudflare Pages: Edit" on this account only.
   - Add a `/lab/orb` → `/lab/orb/` redirect (`_redirects`) and a 404 that links back to the demo.
 - [ ] **Owner:** connect this repo in the Cloudflare dashboard (or create the scoped token), after noui.si is on Cloudflare (`docs/SITE-MIGRATION.md`).
 - [ ] Until the noui.si move is done, preview the demo on its `*.pages.dev` URL.
 - [ ] Open the deployed demo over HTTPS and confirm the microphone works in Chrome and Safari.
 
+
+Done so far (8 Oct 2026):
+
+- `demo/index.html` is built only on the public API (also the first customer of the new read-only `levels` property, SPEC §3.2). Copy settings exports the component's own `config` (SPEC §13 shape), not the prototype's ad hoc JSON, so it can be pasted back into `orb.config`.
+- The old bare page the tests drive now lives at `demo/harness/` and is not part of the demo build.
+- `build:demo` fails if the bundle doesn't register `<noui-orb>`. This caught a real bug: the demo's source import was tree-shaken away because `sideEffects` only listed `dist/index.js`.
+- 10 demo tests (states, a full turn with the card, step aside and recall, tuning and Copy settings, simulated voice, an audio file, a fake microphone device, ending and restarting the session).
+
+Still open: **Owner** Cloudflare connection, the `*.pages.dev` check, and the real-microphone check on Chrome and Safari over HTTPS (steps in `docs/DEPLOY-DEMO.md`). Nothing in the demo has been seen in Safari or Firefox.
 ## M4 · Acceptance
 
 - [ ] Work through SPEC §16 and tick each item here with a short note.

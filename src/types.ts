@@ -66,3 +66,13 @@ export interface Levels {
   bass: number;
   treble: number;
 }
+
+/** The smoothed signal the orb is showing (SPEC §3.2 `levels`). */
+export interface OrbSignal {
+  amp: number;
+  bright: number;
+  bass: number;
+  treble: number;
+  pace: number;
+  paceRate: number;
+}

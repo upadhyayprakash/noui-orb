@@ -1,32 +1,158 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>noui-orb dev harness</title>
-    <style>
-      body { margin: 0; font: 14px system-ui, sans-serif; background: #f1f0ee; color: #1b1917; }
-      @media (prefers-color-scheme: dark) { body { background: #131211; color: #f2efeb; } }
-      main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
-      noui-orb { width: min(100%, 560px); margin: 0 auto; background: #e9e7e4; border-radius: 24px; }
-      @media (prefers-color-scheme: dark) { noui-orb { background: #1a1918; } }
-      .row { display: flex; gap: 6px; flex-wrap: wrap; }
-      button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid #8884; background: transparent; color: inherit; cursor: pointer; }
-      pre { margin: 0; font-size: 12px; min-height: 3em; white-space: pre-wrap; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <noui-orb id="orb" gestures intro="manual"></noui-orb>
-      <div class="row" id="states"></div>
-      <div class="row" id="gestures"></div>
-      <div class="row" id="misc"></div>
-      <pre id="log"></pre>
-    </main>
-    <script>
-      // Harness options: ?intro=none|auto|manual and ?sim=1 (simulated voice levels).
-      document.getElementById("orb").setAttribute("intro", new URLSearchParams(location.search).get("intro") || "manual");
-    </script>
-    <script type="module" src="./main.ts"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>noui-orb demo</title>
+<meta name="description" content="Interactive demo of &lt;noui-orb&gt;, the living orange o of the noui mark, as a framework-free Web Component.">
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <p class="eyebrow">noui-orb · web component</p>
+    <h1>noui orb</h1>
+    <p class="lede"><code>&lt;noui-orb&gt;</code> is the orange o from the mark as a live voice surface. This page is built only on the component's public API. Switch states, change what drives it, and tune the motion until it feels right.</p>
+  </header>
+
+  <main class="bench">
+    <section class="stage-col" aria-label="Orb preview">
+      <div class="stage" id="stage">
+        <noui-orb id="orb" gestures intro="manual" label="noui"></noui-orb>
+        <div class="card-slot" id="cardSlot" hidden>
+          <div class="ui-card" id="uiCard" role="group" aria-label="Example interface the orb assembled">
+            <p class="ui-eyebrow">Reminder</p>
+            <p class="ui-title">Call the supplier about the delayed order</p>
+            <p class="ui-meta">Today · 4:00 PM</p>
+            <div class="ui-actions">
+              <button class="btn btn-small" type="button" id="cardChange">Change time</button>
+              <button class="btn btn-small ui-primary" type="button" id="cardConfirm">Set reminder</button>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      <div class="caption" aria-live="polite">
+        <div class="caption-head">
+          <h2 id="capTitle">Idle</h2>
+          <span class="mono step" id="capStep"></span>
+        </div>
+        <p id="capText"></p>
+        <p class="note" id="rmNote" hidden>Reduced motion is on, so the intro is skipped and the orb moves slowly.</p>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Controls">
+      <div class="group">
+        <div class="group-head"><h3>State</h3><span class="hint">Keys 1–6</span></div>
+        <div class="state-grid" id="stateGrid"></div>
+        <div class="row">
+          <button class="btn btn-primary" id="seqBtn" type="button">Play a full turn</button>
+          <button class="btn" id="sessionBtn" type="button">End session</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Character</h3><label class="switch" for="charOn"><input type="checkbox" id="charOn" checked> Gestures</label></div>
+        <div class="gesture-grid" id="gestureRow">
+          <button class="btn" type="button" data-g="nod">Yes · nod</button>
+          <button class="btn" type="button" data-g="shake">No · shake</button>
+          <button class="btn" type="button" data-g="huh">Huh?</button>
+          <button class="btn" type="button" data-g="hop">Done · hop</button>
+          <button class="btn" type="button" data-g="interrupt">Interrupt</button>
+          <button class="btn" type="button" data-g="emit">Show card</button>
+          <button class="btn" type="button" data-g="point">Point</button>
+          <button class="btn" type="button" data-g="aside" id="asideBtn">Step aside</button>
+          <button class="btn" type="button" data-g="wait">Wait</button>
+        </div>
+        <p class="note" id="charNote">On its own it leans toward your pointer while listening, nods before thinking, breathes in before speaking and hops when a task finishes. The buttons fire each gesture by hand.</p>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Signal</h3><span class="hint">Drives listening and speaking</span></div>
+        <div class="seg" role="radiogroup" aria-label="Signal source" id="srcSeg">
+          <button type="button" role="radio" aria-checked="true" data-src="sim" id="srcSim">Simulated</button>
+          <button type="button" role="radio" aria-checked="false" data-src="file" id="srcFile">Audio file</button>
+          <button type="button" role="radio" aria-checked="false" data-src="mic" id="srcMic">Microphone</button>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*" hidden>
+        <p class="note" id="srcNote">A synthetic voice envelope: syllables, word gaps and phrase pauses.</p>
+        <div class="slider" id="paceRow">
+          <div class="slider-head"><label for="pace">Speech pace</label><output id="paceOut" class="mono">1.0×</output></div>
+          <input type="range" id="pace" min="0.6" max="1.8" step="0.1" value="1">
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Live signal</h3>
+        <div class="meters" id="meters"></div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Tuning</h3><button class="btn btn-small" id="copyBtn" type="button">Copy settings</button></div>
+        <div class="sliders" id="sliders"></div>
+        <textarea id="copyFallback" readonly hidden aria-label="Settings JSON"></textarea>
+      </div>
+    </aside>
+  </main>
+
+  <section class="vocab" aria-labelledby="vocabTitle">
+    <h2 id="vocabTitle">Gesture vocabulary</h2>
+    <p class="spec-intro">Each gesture means one thing. Local signals trigger the instant ones; the backend's reply triggers the ones that need understanding.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Gesture</th><th>Means</th><th>Triggered by</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Lean</td><td>I'm listening to you</td><td>Pointer or input position while listening</td><td>Device</td></tr>
+          <tr><td>Nod</td><td>Got it, or yes</td><td>End of the user's sentence; a yes in the reply</td><td>Device, backend</td></tr>
+          <tr><td>Shake</td><td>No, or can't do that</td><td>A no or a refused request</td><td>Backend</td></tr>
+          <tr><td>Huh</td><td>I didn't understand</td><td>Low-confidence understanding</td><td>Backend</td></tr>
+          <tr><td>Breath</td><td>About to speak</td><td>Half a second before reply audio</td><td>Device</td></tr>
+          <tr><td>Interrupt</td><td>Go ahead</td><td>User starts talking while the orb speaks</td><td>Device</td></tr>
+          <tr><td>Emit</td><td>Here's what you need</td><td>A new piece of interface is assembled</td><td>Backend</td></tr>
+          <tr><td>Point</td><td>Look here</td><td>An element that needs the user's action</td><td>Backend</td></tr>
+          <tr><td>Step aside</td><td>Your turn</td><td>User working in the assembled interface</td><td>Device</td></tr>
+          <tr><td>Wait</td><td>Take your time</td><td>A decision is pending; dims after a long silence</td><td>Device</td></tr>
+          <tr><td>Hop</td><td>Done</td><td>Task finished</td><td>Backend, app</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="spec">
+    <div>
+      <h2>How each state behaves</h2>
+      <p class="spec-intro">The orb shows energy: who is talking and how loudly. The ring shows time, and only appears when there is something to wait for.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>State</th><th>Orb</th><th>Ring</th><th>Driven by</th></tr></thead>
+          <tbody>
+            <tr><td>Idle</td><td>Slow drift, slight breath, softer colour</td><td>Hidden</td><td>Time only</td></tr>
+            <tr><td>Listening</td><td>Waves travel inward; swell follows loudness</td><td>Hidden</td><td>Microphone</td></tr>
+            <tr><td>Thinking</td><td>Fast swirl, warmer core, soft pulse</td><td>Orbiting arc, because the wait has no known end</td><td>Time only</td></tr>
+            <tr><td>Working</td><td>Calm swirl, brief flash on completion</td><td>One segment per step; gaps close when done</td><td>Task progress</td></tr>
+            <tr><td>Speaking</td><td>Waves travel outward; swell follows loudness</td><td>Hidden</td><td>Reply audio</td></tr>
+            <tr><td>Error</td><td>Colour drains, motion nearly stops</td><td>Broken and grey</td><td>Connection status</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h2>What drives the motion</h2>
+      <dl>
+        <div><dt>Loudness → swell and edge wobble</dt><dd>RMS level in decibels, smoothed with a fast attack and a slower release so the orb doesn't jitter.</dd></div>
+        <div><dt>Brightness → colour</dt><dd>Spectral centroid. Brighter voices push toward pale yellow, deeper ones toward red-orange.</dd></div>
+        <div><dt>Bass and treble → wave size</dt><dd>Energy under 300 Hz moves large, slow shapes. Energy between 2.5 and 8 kHz adds fine ripple at the edge.</dd></div>
+        <div><dt>Pointer → lean</dt><dd>With gestures on, the orb's warm core and light drift toward your pointer while listening, or toward the bottom of the screen when there's no pointer.</dd></div>
+        <div><dt>Pace → flow speed</dt><dd>Syllable onsets per second over the last two seconds. Faster speech makes the gradient flow faster.</dd></div>
+      </dl>
+    </div>
+  </section>
+</div>
+<script type="module" src="./main.ts"></script>
+</body>
 </html>

@@ -29,7 +29,7 @@ wrangler.jsonc      Cloudflare Pages config for the demo (pages_build_output_dir
 ## Package shape
 
 - Two entry points: the default export registers `<noui-orb>` on import; `/element` exports the class without registering it.
-- Ship ESM and type declarations. `"sideEffects"` lists only the registering entry.
+- Ship ESM and type declarations. `"sideEffects"` lists only the registering entry (`dist/index.js`, plus `src/index.ts` so the demo build, which imports the source, does not tree-shake the registration away).
 - `files` contains only `dist/`, `README.md`, `LICENSE` and `CHANGELOG.md`. Check with `npm pack --dry-run` before every release.
 - Size budget: under 25 KB min+gzip. CI fails above it.
 

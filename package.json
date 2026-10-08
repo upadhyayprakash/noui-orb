@@ -37,7 +37,8 @@
     "CHANGELOG.md"
   ],
   "sideEffects": [
-    "./dist/index.js"
+    "./dist/index.js",
+    "./src/index.ts"
   ],
   "engines": {
     "node": ">=22.14"
@@ -51,7 +52,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "build": "vite build && tsc -p tsconfig.build.json",
-    "build:demo": "vite build --config vite.demo.config.ts",
+    "build:demo": "vite build --config vite.demo.config.ts && node scripts/copy-pages-files.mjs",
     "size": "node scripts/size.mjs"
   },
   "devDependencies": {

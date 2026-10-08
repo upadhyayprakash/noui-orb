@@ -24,7 +24,7 @@ Do these in order. Making the repo private before the new hosting is live takes 
 6. **go-ahead:** in the GitHub repo, unpublish GitHub Pages (Settings → Pages) and remove the `CNAME` file and any Pages workflow.
 7. **Owner:** make the `noui` repo private (Settings → General → Danger zone → Change visibility).
 8. **Headers.** Add `_headers` (or a Pages Function if logic is needed) for long-cache static assets and security basics (`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`). Add the cross-origin isolation headers only on routes that run on-device models, and test that nothing they embed breaks.
-9. **Demo route.** Pages projects can't be attached to a sub-path of another project's domain, so once the `noui-orb` demo Pages project exists either add a Pages Function in this repo that proxies `/lab/orb/*` to the demo's `*.pages.dev` URL, or give the demo its own subdomain (decision pending in `noui-orb/docs/PLAN.md` M0). Add a link to `/lab/orb/` from the site where it fits.
+9. **Demo route.** Pages projects can't be attached to a sub-path of another project's domain, so once the `noui-orb` demo Pages project exists either add a Pages Function in this repo that proxies `/lab/orb/*` to the demo's `*.pages.dev` URL, The decision is the proxy (option a); the function to start from and what to check are in `noui-orb/docs/DEPLOY-DEMO.md`. Add a link to `/lab/orb/` from the site where it fits.
 
 ## Checks when done
 

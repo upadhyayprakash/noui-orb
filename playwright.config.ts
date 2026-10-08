@@ -5,7 +5,13 @@ export default defineConfig({
   webServer: { command: "npm run dev -- --port 5199", url: "http://localhost:5199/lab/orb/", reuseExistingServer: !process.env.CI },
   use: {
     baseURL: "http://localhost:5199/lab/orb/",
-    // Software GL so WebGL works in headless CI.
-    launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] },
+    launchOptions: {
+      args: [
+        // Software GL so WebGL works in headless CI.
+        "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist",
+        // A fake microphone with auto-granted permission, and playback without a user gesture.
+        "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", "--autoplay-policy=no-user-gesture-required",
+      ],
+    },
   },
 });
