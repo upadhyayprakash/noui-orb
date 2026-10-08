@@ -1,6 +1,6 @@
 {
   "name": "@nouisi/orb",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "<noui-orb>: the living orange o of the noui mark. A voice surface and loading indicator as a framework-free Web Component.",
   "type": "module",
   "license": "MIT",
@@ -40,9 +40,6 @@
     "./dist/index.js",
     "./src/index.ts"
   ],
-  "engines": {
-    "node": ">=22.14"
-  },
   "publishConfig": {
     "access": "public"
   },
