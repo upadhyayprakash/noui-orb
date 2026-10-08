@@ -18,7 +18,8 @@ How npm works for this package (checked against the npm docs on 8 Oct 2026): pub
    - `npm stage list @nouisi/orb`
    - `npm stage view <stage-id>` (check the version and the 23 or so files)
    - `npm stage approve <stage-id>` and enter your one-time code
-4. Check: `npm view @nouisi/orb version` shows the new version, and the package page shows provenance. Whether `npm stage publish` records provenance is not confirmed by the docs; the first run will tell.
+   Approval can also be done on npmjs.com instead of the CLI (the `stage` commands need a recent npm and Node 22.14 or later).
+4. Check: `npm view @nouisi/orb version` shows the new version, `npm audit signatures` in a project that installed it reports a verified attestation, and the package page shows the provenance badge. Confirmed on 0.1.1: a staged publish through trusted publishing does record provenance.
 
 ## After the first successful release
 
