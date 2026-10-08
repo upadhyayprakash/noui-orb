@@ -7,6 +7,7 @@
 - `docs/SPEC.md` is the contract: API, states, numbers, timings, acceptance criteria. If code and spec disagree, fix the code or update the spec in the same commit.
 - `prototype/noui-orb-prototype.html` is the reference behaviour. Open it in a browser to see and feel the target. Port from it (the shader is the `FS` string; springs, gestures and intro are in the script). Do not edit it; it's the baseline to compare against.
 - `docs/PLAN.md` is the milestone plan. Work through it in order and tick boxes as you go.
+- `docs/OPERATIONS.md` explains how the domain, Cloudflare Pages, both repos, CI/CD and npm releases fit together, with a debugging playbook. Update it when any of that changes (it has sections marked pending until the domain move is finished).
 
 ## Stack
 
