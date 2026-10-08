@@ -33,3 +33,31 @@ Do these in order. Making the repo private before the new hosting is live takes 
 - [ ] The `noui` repo is private; a logged-out browser gets a 404 on its GitHub URL.
 - [ ] `https://noui.si/lab/orb/` serves the demo; every other path serves the site.
 - [ ] Pushing to `main` in `noui` redeploys the site; a branch push gives a preview URL.
+
+---
+
+## Inventory taken 8 Oct 2026 (read-only checks)
+
+- **Registrar and DNS:** OpusDNS. Nameservers `atlas.dns-parking.com` and `hyperion.dns-parking.com` (OpusDNS default DNS, run by Hostinger). Domain expires 2027-10-02.
+- **Records:** four `A` records to GitHub Pages (185.199.108.153, .109.153, .110.153, .111.153), `www` CNAME to `upadhyayprakash.github.io`. TTL about 30 minutes. **No MX, TXT, CAA, AAAA or DMARC** on the authoritative servers, so there is no email on this domain to preserve (re-check at the registrar if you use email forwarding there).
+- **DNSSEC:** none (no DS record), so changing nameservers is safe on that front.
+- **GitHub Pages:** deploys with `.github/workflows/deploy.yml` (Node 20, `npm run build`, `dist`), custom domain `noui.si`, HTTPS enforcement currently off. No `SITE_THEME` repository variable, so the build uses the default `system`.
+- **Site:** Vite 8, React 19, no router. Needs Node 20.19 or 22.12+, so set `NODE_VERSION=22` on Pages.
+- **Repo `upadhyayprakash/noui`:** public today.
+
+## Runbook for noui.si
+
+Order matters. The repo goes private **last**; private-first would take the site offline.
+
+Prepared in the site repo on branch `cloudflare-pages` (not pushed): `functions/lab/orb/[[path]].js` (proxy to `noui-orb-demo.pages.dev`), `public/_redirects`, `public/_headers`, and a `.gitignore` entry for the nested `noui-orb/` folder. `deploy.yml` and `public/CNAME` stay until after the cutover.
+
+1. **Cloudflare: add the zone.** Dashboard → Add a domain → `noui.si` → Free plan. Let it import the existing records; there is nothing else to copy. Do not change nameservers yet. The zone shows "Pending" and gives two nameservers.
+2. **Cloudflare: create the site's Pages project.** Workers & Pages → Create → Pages → Connect to Git → `upadhyayprakash/noui`. Production branch `main`. Build command `npm ci && npm run build`, output directory `dist`, framework preset None, environment variable `NODE_VERSION` = `22`. Name it e.g. `noui-site`.
+3. **Check it on `https://noui-site.pages.dev`** (with `main` as it is today). Every page, the load splash, fonts, the share image and favicon. Do not submit the forms, and avoid staying long: the experiment, popup, footer form and the visit ping write real rows to the Google Sheet.
+4. **Test the demo proxy on a preview.** Push the `cloudflare-pages` branch. Cloudflare builds a preview URL for it. On that URL check `/lab/orb/`, `/lab/orb/assets/...`, `/lab/orb` (no slash), and that the microphone still works through the proxy. Fix the function here if anything is off.
+5. **Merge `cloudflare-pages` into `main`** once step 4 passes. GitHub Pages keeps serving noui.si and Cloudflare builds production on `*.pages.dev`.
+6. **Go-ahead needed: the cutover.** At OpusDNS, change the nameservers to the two Cloudflare gave you. Wait until the zone shows Active. Then in the Pages project: Custom domains → add `noui.si`, and `www.noui.si` (redirect `www` to the apex). Cloudflare replaces the old GitHub `A` and `www` records. Check `https://noui.si` over HTTPS: the response header `server` should say `cloudflare`.
+7. **Check the live site and `https://noui.si/lab/orb/`**, then the microphone on the final URL.
+8. **Unpublish GitHub Pages:** repo Settings → Pages. Delete `.github/workflows/deploy.yml` and `public/CNAME` in a commit.
+9. **Make the repo private** (Settings → Danger zone → Change visibility). The Pages project keeps building because the Cloudflare GitHub app has access. Check that a push to `main` still deploys.
+10. **Rollback:** until step 8, pointing the nameservers back at the OpusDNS ones restores the old setup within the record TTL.

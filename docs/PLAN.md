@@ -20,10 +20,10 @@ Agreed on 8 Oct 2026 unless marked "confirm".
 ## M1 · Scaffold
 
 - [x] `git init`, `.gitignore` (node_modules, dist, demo-dist, .env, .npmrc), `README.md` stub, `LICENSE`, `CHANGELOG.md`.
-- [ ] `package.json`: name, `version: 0.0.0`, `type: module`, `exports` for `.` and `./element`, `types`, `files`, `sideEffects`, `engines.node >= 22.14`, `publishConfig.access: public`, `repository`, `homepage` (the demo URL), `keywords`, `license`.
-- [ ] TypeScript strict, Vite library config, Vitest, Playwright, size check.
-- [ ] `ci.yml`: on push and pull request, run install, typecheck, unit tests, build, size check, Playwright smoke test.
-- [ ] Create the **public** GitHub repo `noui-orb` with `gh repo create` (confirm the owner first) and push `main`.
+- [x] `package.json`: name, `version: 0.0.0`, `type: module`, `exports` for `.` and `./element`, `types`, `files`, `sideEffects`, `engines.node >= 22.14`, `publishConfig.access: public`, `repository`, `homepage` (the demo URL), `keywords`, `license`. *(The `engines` field was dropped later, see M5.)*
+- [x] TypeScript strict, Vite library config, Vitest, Playwright, size check.
+- [x] `ci.yml`: on push and pull request, run install, typecheck, unit tests, build, size check, Playwright smoke test.
+- [x] Create the **public** GitHub repo `noui-orb` with `gh repo create` (confirm the owner first) and push `main`.
 
 ## M2 · Component
 
@@ -53,9 +53,9 @@ Done 8 Oct 2026. Notes:
 - [x] Config for the demo as its own Cloudflare Pages project (`wrangler.jsonc`, `pages/_redirects`, `pages/_headers`, `pages/404.html`, copied into `demo-dist/` by `npm run build:demo`). Serving it at `noui.si/lab/orb/` via option (a) is in `docs/DEPLOY-DEMO.md` and `SITE-MIGRATION.md`; not deployed yet.
   - Done 8 Oct 2026: checked the current Cloudflare docs for: Pages Git integration, `_redirects` and `_headers`, Pages Functions, and custom domains. Prefer Pages Git integration (Cloudflare pulls from GitHub; no secret in this repo). Fall back to a GitHub Action with `wrangler pages deploy` and a `CLOUDFLARE_API_TOKEN` secret scoped to "Cloudflare Pages: Edit" on this account only.
   - Add a `/lab/orb` → `/lab/orb/` redirect (`_redirects`) and a 404 that links back to the demo.
-- [ ] **Owner:** connect this repo in the Cloudflare dashboard (or create the scoped token), after noui.si is on Cloudflare (`docs/SITE-MIGRATION.md`).
-- [ ] Until the noui.si move is done, preview the demo on its `*.pages.dev` URL.
-- [ ] Open the deployed demo over HTTPS and confirm the microphone works in Chrome and Safari.
+- [x] **Owner:** connect this repo in the Cloudflare dashboard (or create the scoped token), after noui.si is on Cloudflare (`docs/SITE-MIGRATION.md`). *(Done via Pages Git integration on 8 Oct 2026 as `noui-orb-demo`; it did not need noui.si on Cloudflare.)*
+- [x] Until the noui.si move is done, preview the demo on its `*.pages.dev` URL.
+- [x] Open the deployed demo over HTTPS and confirm the microphone works in Chrome and Safari.
 
 
 Done so far (8 Oct 2026):
