@@ -25,6 +25,16 @@
       <pre id="log"></pre>
     </main>
     <script>
+      // ?nogl forces the CSS fallback (no WebGL) so logic tests run fast and deterministically,
+      // even on CI runners that render WebGL in software.
+      if (new URLSearchParams(location.search).has("nogl")) {
+        const getContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+          return /webgl/.test(type) ? null : getContext.call(this, type, ...args);
+        };
+      }
+    </script>
+    <script>
       // Harness options: ?intro=none|auto|manual and ?sim=1 (simulated voice levels).
       document.getElementById("orb").setAttribute("intro", new URLSearchParams(location.search).get("intro") || "manual");
     </script>

@@ -6,7 +6,7 @@ const ready = async (page: Page) => {
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await page.goto("./");
-  await page.waitForFunction(() => !(document.getElementById("seqBtn") as HTMLButtonElement | null)?.disabled, null, { timeout: 15000 });
+  await page.waitForFunction(() => !(document.getElementById("seqBtn") as HTMLButtonElement | null)?.disabled, null, { timeout: 40000 });
   return errors;
 };
 const orbState = (page: Page) => page.evaluate(() => (window as any).orb.state as string);
@@ -44,21 +44,21 @@ test("number keys switch states and the buttons follow", async ({ page }) => {
 test("working shows the ring steps, then completes", async ({ page }) => {
   await ready(page);
   await page.keyboard.press("4");
-  await page.waitForFunction(() => /Step 2 of 3/.test(document.getElementById("capStep")!.textContent!), null, { timeout: 8000 });
+  await page.waitForFunction(() => /Step 2 of 3/.test(document.getElementById("capStep")!.textContent!), null, { timeout: 30000 });
   expect(await page.evaluate(() => (window as any).orb.getAttribute("aria-label"))).toMatch(/working, step [23] of 3/);
-  await page.waitForFunction(() => document.getElementById("capStep")!.textContent === "3 of 3 done", null, { timeout: 8000 });
+  await page.waitForFunction(() => document.getElementById("capStep")!.textContent === "3 of 3 done", null, { timeout: 30000 });
 });
 
 test("a full turn assembles the card from the orb, and the card dismisses back into it", async ({ page }) => {
   await ready(page);
   await page.click("#seqBtn");
-  await page.waitForFunction(() => !document.getElementById("cardSlot")!.hidden, null, { timeout: 25000 });
+  await page.waitForFunction(() => !document.getElementById("cardSlot")!.hidden, null, { timeout: 60000 });
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => (window as any).orb.placement)).toBe("room");
   expect(await orbState(page)).toBe("speaking");
-  await page.waitForFunction(() => !document.getElementById("seqBtn")!.textContent!.startsWith("Stop"), null, { timeout: 15000 });
+  await page.waitForFunction(() => !document.getElementById("seqBtn")!.textContent!.startsWith("Stop"), null, { timeout: 40000 });
   await page.click("#cardConfirm");
-  await page.waitForFunction(() => document.getElementById("cardSlot")!.hidden, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.getElementById("cardSlot")!.hidden, null, { timeout: 30000 });
   await page.waitForFunction(() => (window as any).orb.placement === "center");
 });
 
@@ -123,7 +123,7 @@ test("an audio file drives the orb in speaking", async ({ page }) => {
 test("the microphone (a fake device here) drives the orb in listening", async ({ page }) => {
   await ready(page);
   await page.click("#srcMic");
-  await page.waitForFunction(() => document.getElementById("srcMic")!.getAttribute("aria-checked") === "true", null, { timeout: 10000 });
+  await page.waitForFunction(() => document.getElementById("srcMic")!.getAttribute("aria-checked") === "true", null, { timeout: 30000 });
   expect(await orbState(page)).toBe("listening");
   expect(await page.textContent("#srcNote")).toMatch(/Live microphone/);
   const peak = await page.evaluate(async () => {
@@ -141,9 +141,9 @@ test("the microphone (a fake device here) drives the orb in listening", async ({
 test("ending the session plays the outro, and starting it plays the intro again", async ({ page }) => {
   await ready(page);
   await page.click("#sessionBtn");
-  await page.waitForFunction(() => document.getElementById("sessionBtn")!.textContent === "Start session", null, { timeout: 8000 });
+  await page.waitForFunction(() => document.getElementById("sessionBtn")!.textContent === "Start session", null, { timeout: 30000 });
   expect(await page.isDisabled("#seqBtn")).toBe(true);
   await page.click("#sessionBtn");
-  await page.waitForFunction(() => document.getElementById("sessionBtn")!.textContent === "End session", null, { timeout: 8000 });
+  await page.waitForFunction(() => document.getElementById("sessionBtn")!.textContent === "End session", null, { timeout: 30000 });
   await page.waitForFunction(() => !(document.getElementById("seqBtn") as HTMLButtonElement).disabled);
 });

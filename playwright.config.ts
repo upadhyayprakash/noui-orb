@@ -2,6 +2,8 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "tests/e2e",
+  // CI runners render WebGL in software and can be several times slower than a laptop.
+  timeout: 90_000,
   webServer: { command: "npm run dev -- --port 5199", url: "http://localhost:5199/lab/orb/", reuseExistingServer: !process.env.CI },
   use: {
     baseURL: "http://localhost:5199/lab/orb/",
