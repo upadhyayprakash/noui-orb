@@ -17,5 +17,13 @@ if (!/customElements\.define\(\s*["'`]noui-orb["'`]/.test(js)) {
   process.exit(1);
 }
 
+// Link previews need the share image and its tags. Fail the build if either goes missing.
+const html = readFileSync("demo-dist/lab/orb/index.html", "utf8");
+const image = /<meta property="og:image" content="https:\/\/noui\.si(\/lab\/orb\/[^"]+)"/.exec(html);
+if (!image || !existsSync(`demo-dist${image[1]}`) || !/<meta property="og:title"/.test(html) || !/<meta name="twitter:card"/.test(html)) {
+  console.error("The demo page is missing its Open Graph tags or the og:image file (demo/public/og.png).");
+  process.exit(1);
+}
+
 cpSync("pages", "demo-dist", { recursive: true });
 console.log("demo bundle registers <noui-orb>; copied pages/ into demo-dist/");

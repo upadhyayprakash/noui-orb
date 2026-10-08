@@ -183,3 +183,18 @@ test("Get started: the Copy button copies the sample", async ({ page, context })
   await expect(page.locator('.code[data-snippet="install"] .copy')).toHaveText("Copied");
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("npm i @nouisi/orb");
 });
+
+test("link previews: Open Graph and Twitter tags point at a share image that exists", async ({ page, request }) => {
+  await page.goto("./");
+  const meta = (sel: string) => page.getAttribute(sel, "content");
+  expect(await meta('meta[property="og:title"]')).toContain("noui-orb");
+  expect(await meta('meta[property="og:url"]')).toBe("https://noui.si/lab/orb/");
+  expect(await meta('meta[name="twitter:card"]')).toBe("summary_large_image");
+  expect(await page.getAttribute('link[rel="canonical"]', "href")).toBe("https://noui.si/lab/orb/");
+  const image = (await meta('meta[property="og:image"]'))!;
+  expect(image).toBe("https://noui.si/lab/orb/og.png");
+  // Same file, fetched from this server (the dev server serves it at the demo's own base path).
+  const res = await request.get("og.png");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("image/png");
+});
