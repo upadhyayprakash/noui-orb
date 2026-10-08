@@ -1,7 +1,7 @@
 name: ci
 
 # Branch and pull request pushes get the fast checks. Pushes to main also run the slow prototype comparison,
-# in a parallel job so it does not add to the wall time. Tag pushes do not run ci (the release workflow
+# on two parallel runners (60 and 15 fps) so it does not add to the wall time. Tag pushes do not run ci (the release workflow
 # runs its own checks). "Run workflow" in the Actions tab runs everything on any branch.
 on:
   push:
@@ -35,11 +35,15 @@ jobs:
       - run: npm run test:e2e:quick
 
   compare:
-    name: compare with the prototype
-    # The comparison is statistical and slow (about 2 minutes locally, several on a runner), so it runs on main
-    # or when started by hand, in parallel with the job above.
+    name: compare with the prototype (${{ matrix.fps }} fps)
+    # The comparison is statistical and slow (about 4 minutes per test on a runner), so it runs on main or when
+    # started by hand, with one runner per frame rate, in parallel with the job above.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fps: [60, 15]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,4 +52,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e:compare
+      - run: npx playwright test acceptance --grep "match the prototype side by side at ${{ matrix.fps }} fps"
