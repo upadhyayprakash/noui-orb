@@ -133,7 +133,7 @@ Before M6 can start (needs the owner): the **approved logo SVG** (probably in th
 
 ## Backlog (not scheduled)
 
-- **CI time.** `ci` takes about 10 minutes and runs twice on a tag push. Options: skip `ci` on tags, and run the two prototype-comparison tests only on `main`.
+- **CI time (9 Oct 2026): in progress.** `ci` took about 10 minutes (609 s of 641 s was the e2e step) and ran twice on a tag push. Done: no run on tags, the prototype-comparison tests moved to a parallel job that runs only on `main` or by hand, superseded branch runs are cancelled, per-test timings in the log. Next, if still needed: shard the quick e2e tests across two jobs.
 - **Release 0.1.2.** The npm page still shows the README from 0.1.1 (which links to the pages.dev demo); a patch release would refresh it, with the share-image and link updates.
 - **SPEC §16 open items.** Microphone reaction time (50 ms, unmeasured) and iOS confirmation; the hand-off with the approved artwork (comes with M6).
 - **Firefox** is untested for the component.

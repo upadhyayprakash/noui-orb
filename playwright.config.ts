@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: "tests/e2e",
   // CI runners render WebGL in software and can be several times slower than a laptop.
   timeout: 90_000,
+  // One line per test with its duration, in the CI log too (the default reporter on CI hides them).
+  reporter: "list",
   webServer: { command: "npm run dev -- --port 5199", url: "http://localhost:5199/lab/orb/", reuseExistingServer: !process.env.CI },
   use: {
     baseURL: "http://localhost:5199/lab/orb/",

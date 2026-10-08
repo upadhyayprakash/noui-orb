@@ -339,7 +339,9 @@ GitHub `upadhyayprakash/noui-orb`, public, MIT licence (the noui name and mark a
 npm run dev          # the demo with hot reload (http://localhost:5173/lab/orb/)
 npm run typecheck    # TypeScript, strict
 npm test             # unit tests (fast, no browser)
-npm run test:e2e     # Playwright (starts the dev server itself); about 3 minutes locally
+npm run test:e2e     # Playwright, all tests (starts the dev server itself); about 3 minutes locally
+npm run test:e2e:quick    # everything except the slow prototype comparison (what branches run on CI)
+npm run test:e2e:compare  # only the two prototype comparison tests (what main also runs on CI)
 npm run build        # the package into dist/ (ESM + type declarations)
 npm run size         # fail if dist/*.js is over 25 KB min+gzip
 npm run build:demo   # the demo into demo-dist/, then checks it registers the element and copies pages/
@@ -370,10 +372,13 @@ There are four pipelines. Read their logs on GitHub: repo, **Actions** tab. Or f
 
 ### A. orb repo: `ci` (GitHub Actions, `.github/workflows/ci.yml`)
 
-- **Trigger:** every push (any branch **and any tag**) and every pull request.
-- **Machine:** `ubuntu-latest`, Node 22.14.
-- **Steps, in order:** `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, `npm run size`, `npm run build:demo`, install Chromium, `npm run test:e2e`.
-- **Duration:** about 10 minutes (the two prototype-comparison tests dominate). A tag push triggers a second, redundant run on the same commit.
+- **Trigger:** a push to any **branch**, every pull request, and a manual "Run workflow" in the Actions tab. **Tag pushes do not run `ci`** (the release workflow runs its own checks).
+- **Two jobs run in parallel:**
+  - **`test`** (always): Node 22.14, `npm ci`, typecheck, unit tests, build, size check, `npm run build:demo`, install Chromium, then `npm run test:e2e:quick` (every e2e test except the prototype comparison).
+  - **`compare with the prototype`** (only on pushes to `main`, or when started by hand): `npm run test:e2e:compare`, the two slow side-by-side tests. They are statistical and allowed two retries.
+- **Why split it:** measured on a run of `main` (8 Oct 2026): 609 of 641 seconds were the e2e step; install, typecheck, unit tests, build and size together took about 30 s. The comparison tests are the slowest, so they run beside the rest instead of adding to it, and pull requests skip them. Run everything locally with `npm run test:e2e`.
+- **Superseded runs are cancelled** on branches (a newer push replaces the older run). On `main` nothing is cancelled, so every commit gets its own verdict.
+- **Reading timings:** the Playwright reporter is `list`, so the CI log shows each test with its duration. Use that before tuning anything.
 - **It does not deploy anything.** It only says whether the commit is healthy.
 
 ### B. orb demo: Cloudflare builds `noui-orb-demo`
@@ -500,7 +505,6 @@ Incidents marked **seen** actually happened in this project.
 | `HTMLElement is not defined` when importing the package on a server (**seen**) | A browser global is used at import time | `node -e "import('./dist/index.js')"` | Guard with `typeof HTMLElement !== "undefined"` as `element.ts` does; `ssr.test.ts` guards this |
 | e2e tests pass locally, fail on CI with timing errors (**seen**) | CI is slow (software WebGL); a test sleeps then asserts | Compare durations in the log | Poll for the condition; run logic tests with `?nogl` |
 | `all six states match the prototype` fails once, passes on rerun (**seen**) | Statistical test on a moving noise field | Read the printed numbers in the failure | It already retries twice. If it fails 3 times, a real difference exists: compare the screenshots |
-| CI runs twice on a release | `ci` also triggers on tags | Actions tab | Harmless. Could be limited to branches |
 | A shared link shows no image or a plain card | The page has no Open Graph tags or the share image is missing or cached | `curl -s https://noui.si/lab/orb/ \| grep og:image`; open the image URL | Fix the tags or the image (the demo build fails if they are missing); refresh the platform's cache (LinkedIn Post Inspector) |
 | Random-URL bots create "visits" in the Google Sheet | The visit ping is on the 404 page | Check `dist/404.html` for `visit-entry` | It must stay excluded (see [6](#6-the-site-repo-noui)) |
 | New page missing from the build | Not added to `rollupOptions.input` | `ls dist` | Add it to `vite.config.js` |
@@ -606,7 +610,7 @@ Honest list as of 8 Oct 2026.
 - **`www.noui.si` is not redirected** to the apex; it serves the same site. Pages declare `noui.si` as canonical, so this is cosmetic.
 - **Microphone latency (SPEC 16):** the "reacts within 50 ms" target is not measured, and iOS is not confirmed. Chrome and Safari were confirmed by the owner on the deployed demo.
 - **Approved logo artwork** is not in the orb yet. The hand-off alignment (within 1 px at 640 px) is verified with the placeholder mark only. Milestone M6 adopts the orb in noui.si and brings the real artwork.
-- **CI is slow (about 10 min)** and runs twice on a tag push. Possible fix: skip `ci` on tags and run the two comparison tests only on `main`.
+- **CI wall time** was about 10 minutes and is being brought down by splitting the slow comparison tests into a parallel job (see 8A). Measure again from the `list` timings before going further (for example sharding the quick e2e tests across two jobs).
 - **GitHub Actions warns** that Node 20 based actions (`checkout@v4`, `setup-node@v4`) are deprecated; they currently run on Node 24 anyway. Bump the action versions when convenient.
 - **Firefox is untested** for the component.
 - **Rollback in Cloudflare Pages** has not been exercised; the Deployments tab is where it should be.

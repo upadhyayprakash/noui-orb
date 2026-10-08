@@ -53,7 +53,7 @@ wrangler.jsonc      Cloudflare Pages config for the demo (pages_build_output_dir
 
 - `npm run dev`: demo with hot reload
 - `npm test`: unit tests
-- `npm run test:e2e`: Playwright smoke test
+- `npm run test:e2e`: all Playwright tests (`test:e2e:quick` skips the slow prototype comparison and is what branches run on CI; `test:e2e:compare` runs only that comparison, which `main` also runs on CI)
 - `npm run build`: package to `dist/`
 - `npm run build:demo`: demo to `demo-dist/lab/orb/`
 - `npm run size`: size check against the budget

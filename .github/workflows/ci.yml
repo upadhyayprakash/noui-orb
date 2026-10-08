@@ -1,9 +1,22 @@
 name: ci
+
+# Branch and pull request pushes get the fast checks. Pushes to main also run the slow prototype comparison,
+# in a parallel job so it does not add to the wall time. Tag pushes do not run ci (the release workflow
+# runs its own checks). "Run workflow" in the Actions tab runs everything on any branch.
 on:
   push:
+    branches: ["**"]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # A newer push to a branch cancels the older run. Never cancel on main: every main commit gets its own verdict.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,4 +31,21 @@ jobs:
       - run: npm run size
       - run: npm run build:demo
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      # Everything except the slow prototype comparison (see the compare job).
+      - run: npm run test:e2e:quick
+
+  compare:
+    name: compare with the prototype
+    # The comparison is statistical and slow (about 2 minutes locally, several on a runner), so it runs on main
+    # or when started by hand, in parallel with the job above.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:compare

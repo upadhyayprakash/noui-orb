@@ -50,7 +50,9 @@
     "test:e2e": "playwright test",
     "build": "vite build && tsc -p tsconfig.build.json",
     "build:demo": "vite build --config vite.demo.config.ts && node scripts/copy-pages-files.mjs",
-    "size": "node scripts/size.mjs"
+    "size": "node scripts/size.mjs",
+    "test:e2e:quick": "playwright test --grep-invert \"match the prototype side by side\"",
+    "test:e2e:compare": "playwright test acceptance --grep \"match the prototype side by side\""
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",
