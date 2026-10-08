@@ -86,7 +86,7 @@ Done 8 Oct 2026. Notes:
 - [x] Set the version to `0.1.0`, update CHANGELOG, commit.
 - [x] Run `npm pack --dry-run` and show the owner the file list and size.
 - [x] **Owner:** in this folder, run `npm login`, then `npm publish --access public` and enter the one-time password. The package has to exist on npm before trusted publishing can be configured, so this first publish is manual.
-- [ ] **Owner:** on npmjs.com, open the package → Settings → Trusted publishing → GitHub Actions. Enter the GitHub owner, repository and workflow filename `release.yml`. A new trusted-publisher setup expires if it isn't used within about two days, so do the next step promptly.
+- [x] **Owner:** on npmjs.com, open the package → Settings → Trusted publishing → GitHub Actions. Enter the GitHub owner, repository and workflow filename `release.yml`. A new trusted-publisher setup expires if it isn't used within about two days, so do the next step promptly.
 - [x] Claude writes `release.yml` (the version below is the original plan; the real file uses `npm stage publish`, see the note):
 
   ```yaml
