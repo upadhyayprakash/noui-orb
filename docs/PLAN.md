@@ -116,7 +116,7 @@ Done 8 Oct 2026. Notes:
   Trusted publishing needs npm CLI 11.5.1 or later, Node 22.14 or later, `id-token: write`, and a GitHub-hosted runner. Provenance is added automatically for a public repo and public package. No `NODE_AUTH_TOKEN`.
 - [x] Bump to `0.1.1` (a docs or README change is enough), commit, and ask the owner to approve pushing the `v0.1.1` tag.
 - [x] Confirm the release workflow published `0.1.1` and that the npm page shows provenance.
-- [ ] **Owner:** npm package → Settings → Publishing access → "Require two-factor authentication and disallow tokens".
+- [x] **Owner:** npm package → Settings → Publishing access → "Require two-factor authentication and disallow tokens".
 
 Notes (8 Oct 2026):
 
@@ -124,7 +124,7 @@ Notes (8 Oct 2026):
 - **Staged publishing.** npm held the first publish until the owner approved it with 2FA (`npm stage approve`). Per the npm docs a trusted publisher's allowed actions always include `npm stage publish`, while plain `npm publish` has to be allowed separately. So `release.yml` runs `npm stage publish`, and each release waits for the owner's approval. Whether provenance is recorded for a staged publish is not confirmed by the docs; the 0.1.1 run will show. Steps are in `docs/RELEASING.md`.
 - The `engines` field was dropped (a browser component should not restrict consumers' Node version).
 - **0.1.1 is published** (8 Oct 2026). The `v0.1.1` tag ran `release.yml` first time (27 s): typecheck, tests, build, size, then `npm stage publish` via trusted publishing. The version was staged (id `7609d9bc-b993-4628-b7ea-71fb8abd10d6`), the owner approved it with 2FA, and it is on npm with a verified SLSA provenance attestation (`npm audit signatures` reports 1 verified attestation). **Staged publishing does record provenance.** A fresh install shows the corrected README.
-- Still open for M5: the **Owner** step on npmjs.com, Publishing access, "Require two-factor authentication and disallow tokens".
+- M5 complete: Publishing access is set to "Require two-factor authentication and disallow bypass 2fa tokens".
 
 
 ## M6 · Adopt in noui.si
