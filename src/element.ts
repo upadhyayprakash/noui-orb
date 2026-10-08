@@ -60,11 +60,14 @@ const TEMPLATE = `
 <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">${markMarkup()}</svg>
 `;
 
+/** On a server there is no HTMLElement; the class still has to be definable so the module can be imported. */
+const Base = (typeof HTMLElement !== "undefined" ? HTMLElement : class {}) as typeof HTMLElement;
+
 /**
  * `<noui-orb>`: the living form of the orange o in the noui mark (see docs/SPEC.md).
  * Importing this file does not register the element; `@nouisi/orb` (the default entry) does.
  */
-export class NouiOrbElement extends HTMLElement {
+export class NouiOrbElement extends Base {
   static observedAttributes = ["state", "placement", "gestures", "reduced-motion", "label"];
 
   // ---- DOM ----

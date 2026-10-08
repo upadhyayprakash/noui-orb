@@ -146,6 +146,7 @@ All events bubble, are composed, and carry `detail`.
 
 These resolve places where §3 to §14 were ambiguous. Code and spec agree on all of them.
 
+- **Server-side rendering.** Importing the package under Node (or any environment without `HTMLElement` and `customElements`) does not throw, and registers nothing. The element only registers in a browser.
 - **`gestures`** is a plain boolean attribute: present means on, absent means off (§8.3). `document.createElement` users set `el.gestures = true`.
 - **`intro`**: `auto` plays the intro on first connect, `none` starts as the orb, `manual` (default) starts as the complete logo with the orb hidden and nothing animating until `intro()` is called. The intro always lands at `center`, then moves to the requested `placement` if it differs.
 - **Rejections.** `gesture()` rejects with the string `"suppressed"` (not an `Error`), so hosts should `.catch(() => {})` calls they don't need. An unknown gesture name rejects with a `TypeError`.

@@ -1,6 +1,9 @@
 import { NouiOrbElement } from "./element";
 
-if (!customElements.get("noui-orb")) customElements.define("noui-orb", NouiOrbElement);
+// Registers in the browser only, so the package can be imported during server-side rendering.
+if (typeof customElements !== "undefined" && !customElements.get("noui-orb")) {
+  customElements.define("noui-orb", NouiOrbElement);
+}
 
 export { NouiOrbElement };
 export type {
