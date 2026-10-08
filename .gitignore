@@ -1,0 +1,11 @@
+node_modules
+dist
+demo-dist
+.env
+.env.*
+.dev.vars
+.npmrc
+.wrangler
+test-results
+playwright-report
+.DS_Store

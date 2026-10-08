@@ -1,0 +1,64 @@
+{
+  "name": "@nouisi/orb",
+  "version": "0.0.0",
+  "description": "<noui-orb>: the living orange o of the noui mark. A voice surface and loading indicator as a framework-free Web Component.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "web-component",
+    "custom-element",
+    "voice",
+    "orb",
+    "webgl",
+    "loading-indicator",
+    "noui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upadhyayprakash/noui-orb.git"
+  },
+  "homepage": "https://noui.si/lab/orb/",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": [
+    "./dist/index.js"
+  ],
+  "engines": {
+    "node": ">=22.14"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite --config vite.demo.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "build:demo": "vite build --config vite.demo.config.ts",
+    "size": "node scripts/size.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3",
+    "vitest": "^4.1.11"
+  }
+}

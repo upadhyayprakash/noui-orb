@@ -1,0 +1,1066 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>noui Orb</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans:wght@500;600;700&display=swap">
+<style>
+/* Layout: a single workbench. The stage (orb + ring) holds the left, a narrow control rail holds the right, the state spec sits underneath. */
+:root{
+  --bg:#F1F0EE;
+  --stage:#E9E7E4;
+  --surface:#FFFFFF;
+  --line:#DEDAD6;
+  --fg:#1B1917;
+  --muted:#6B655F;
+  --accent:#FF6B1A;
+  --accent-ink:#B93C0A;
+  --accent-soft:#FFEADF;
+  --ring:#E9581C;
+  --ring-track:rgba(27,25,23,.12);
+  --shadow:0 1px 2px rgba(27,25,23,.10);
+  --card-shadow:0 10px 30px rgba(27,25,23,.12);
+  --on-accent:#1B1917;
+  --font-display:"Noto Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131211;--stage:#1A1918;--surface:#1E1D1B;--line:#312E2B;--fg:#F2EFEB;--muted:#A59E97;
+    --accent:#FF7A2E;--accent-ink:#FF9B5E;--accent-soft:#3A2114;--ring:#FF8A45;--ring-track:rgba(242,239,235,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.5);--card-shadow:0 10px 30px rgba(0,0,0,.5);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131211;--stage:#1A1918;--surface:#1E1D1B;--line:#312E2B;--fg:#F2EFEB;--muted:#A59E97;
+  --accent:#FF7A2E;--accent-ink:#FF9B5E;--accent-soft:#3A2114;--ring:#FF8A45;--ring-track:rgba(242,239,235,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.5);--card-shadow:0 10px 30px rgba(0,0,0,.5);color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--font-body);-webkit-font-smoothing:antialiased}
+.page{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:grid;gap:32px}
+.top{display:grid;gap:6px}
+.eyebrow{margin:0;font:500 11px/1.2 var(--font-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent-ink)}
+.top h1{margin:0;font:600 clamp(28px,4.2vw,40px)/1.1 var(--font-display);letter-spacing:-.015em;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:64ch}
+
+.bench{display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:24px;align-items:start}
+@media (max-width:900px){.bench{grid-template-columns:minmax(0,1fr)}}
+.stage-col{display:grid;gap:18px;min-width:0}
+.stage{position:relative;width:100%;max-width:640px;aspect-ratio:1/1;margin-inline:auto;background:var(--stage);border-radius:28px;overflow:hidden}
+.orb-wrap{position:absolute;inset:0;transform-origin:50% 50%;opacity:0}
+.orb-body{position:absolute;inset:0;transform-origin:50% 50%}
+#orb{position:absolute;inset:0;width:100%;height:100%;display:block}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.gesture-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gesture-grid .btn{padding:8px 6px;font-size:12px;text-align:center}
+.stage.is-aside .orb-wrap{cursor:pointer}
+.card-slot{position:absolute;left:50%;bottom:6%;width:min(82%,330px);transform:translate(-50%,0);z-index:2;transition:bottom .6s cubic-bezier(.3,1.25,.5,1),transform .6s cubic-bezier(.3,1.25,.5,1)}
+.card-slot.is-centered{bottom:50%;transform:translate(-50%,50%)}
+.ui-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:3px;box-shadow:var(--card-shadow);transform-origin:50% 50%}
+.ui-eyebrow{margin:0;font:500 10.5px/1.3 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.ui-title{margin:0;font:600 15px/1.3 var(--font-display);text-wrap:balance}
+.ui-meta{margin:0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ui-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+.btn.ui-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transition:box-shadow .25s}
+.btn.ui-primary:hover:not(:disabled){border-color:var(--accent);filter:brightness(1.05)}
+.btn.ui-primary.is-pointed{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent)}
+.vocab{display:grid;gap:4px}
+.vocab h2{margin:0 0 8px;font:600 19px/1.25 var(--font-display)}
+.switch input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.orb-fallback{position:absolute;inset:11%;border-radius:50%;background:radial-gradient(circle at 34% 30%,#FFD58C,#FF9055 46%,#EA5A2A 100%)}
+.ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible;opacity:0;transform-origin:50% 50%;pointer-events:none}
+.ring-track{fill:none;stroke:var(--ring-track);stroke-width:.5}
+.ring-fill{fill:none;stroke:var(--ring);stroke-width:.5;stroke-linecap:round}
+.ring.is-broken .ring-track{stroke:var(--muted);opacity:.7}
+.mark{position:absolute;left:29%;top:29%;width:42%;height:42%;overflow:visible;pointer-events:none}
+.mark path,.mark line{fill:none;stroke:var(--fg);stroke-width:10;stroke-linecap:round;stroke-linejoin:round}
+#markDot{fill:var(--accent)}
+
+.caption{width:100%;max-width:640px;margin-inline:auto;display:grid;gap:4px;align-content:start;min-height:96px}
+.caption-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.caption h2{margin:0;font:600 21px/1.2 var(--font-display)}
+.caption p{margin:0;color:var(--muted);max-width:60ch}
+.mono{font-family:var(--font-mono);font-size:12px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.step{color:var(--accent-ink)}
+.note{margin:0;font-size:13px;color:var(--muted)}
+.note.warn{color:var(--accent-ink)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;display:grid;gap:24px;min-width:0}
+.group{display:grid;gap:10px;min-width:0}
+.group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}
+.group h3{margin:0;font:500 11px/1 var(--font-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted)}
+
+.btn{appearance:none;font:500 13px/1.2 var(--font-body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;transition:border-color .15s,background .15s}
+.btn:hover:not(:disabled){border-color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn-primary:hover:not(:disabled){border-color:var(--fg);opacity:.9}
+.btn-small{padding:6px 10px;font-size:12px}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row .btn{flex:1 1 auto}
+.state-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.state-btn{display:flex;align-items:center;justify-content:space-between;gap:6px;text-align:left}
+.state-btn kbd{font:500 10px/1 var(--font-mono);color:var(--muted)}
+.state-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+.state-btn[aria-pressed="true"] kbd{color:var(--accent-ink)}
+
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;border:1px solid var(--line);border-radius:11px;background:var(--bg)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 12.5px/1.2 var(--font-body);padding:8px 6px;border-radius:8px;cursor:pointer}
+.seg button[aria-checked="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.linkish{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+
+.meters{display:grid;gap:9px}
+.meter{display:grid;grid-template-columns:76px minmax(0,1fr) 46px;align-items:center;gap:10px;font-size:13px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit}
+.meter output{text-align:right;color:var(--muted)}
+
+.sliders{display:grid;gap:12px}
+.slider{display:grid;gap:4px}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.slider-head output{color:var(--muted)}
+input[type=range]{width:100%;margin:0;accent-color:var(--accent)}
+textarea{width:100%;min-height:120px;font:12px/1.5 var(--font-mono);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;resize:vertical}
+
+.spec{display:grid;gap:28px;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+@media (max-width:900px){.spec{grid-template-columns:minmax(0,1fr)}}
+.spec h2{margin:0 0 12px;font:600 19px/1.25 var(--font-display)}
+.spec-intro{margin:0 0 14px;color:var(--muted);max-width:60ch;font-size:14px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font:500 11px/1.3 var(--font-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+td:first-child{font-weight:600;white-space:nowrap}
+dl{margin:0;display:grid;gap:12px}
+dl div{display:grid;gap:2px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+dl div:last-child{border-bottom:0}
+dt{font-weight:600;font-size:14px}
+dd{margin:0;color:var(--muted);font-size:13.5px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div class="page">
+  <header class="top">
+    <p class="eyebrow">noui · motion prototype</p>
+    <h1>noui orb</h1>
+    <p class="lede">The orange o from the mark becomes a live voice surface. Switch states, change what drives it, and tune the motion until it feels right.</p>
+  </header>
+
+  <main class="bench">
+    <section class="stage-col" aria-label="Orb preview">
+      <div class="stage" id="stage">
+        <div class="orb-wrap" id="orbWrap">
+          <div class="orb-body" id="orbBody">
+            <canvas id="orb" aria-hidden="true"></canvas>
+            <div class="orb-fallback" id="orbFallback" hidden></div>
+          </div>
+          <svg class="ring" id="ring" viewBox="0 0 100 100" aria-hidden="true">
+            <g id="ringTrack"></g>
+            <g id="ringFill"></g>
+          </svg>
+        </div>
+        <div class="card-slot" id="cardSlot" hidden>
+          <div class="ui-card" id="uiCard" role="group" aria-label="Example interface the orb assembled">
+            <p class="ui-eyebrow">Reminder</p>
+            <p class="ui-title">Call the supplier about the delayed order</p>
+            <p class="ui-meta">Today · 4:00 PM</p>
+            <div class="ui-actions">
+              <button class="btn btn-small" type="button" id="cardChange">Change time</button>
+              <button class="btn btn-small ui-primary" type="button" id="cardConfirm">Set reminder</button>
+            </div>
+          </div>
+        </div>
+        <svg class="mark" id="mark" viewBox="0 0 120 120" role="img" aria-label="noui mark">
+          <g id="markLetters">
+            <path d="M14 52V31a16 16 0 0 1 32 0v21"/>
+            <path d="M14 68v21a16 16 0 0 0 32 0V68"/>
+          </g>
+          <line id="markStem" x1="90" y1="68" x2="90" y2="105"/>
+          <circle id="markDot" cx="90" cy="55" r="5.5"/>
+        </svg>
+      </div>
+      <div class="caption" aria-live="polite">
+        <div class="caption-head">
+          <h2 id="capTitle">Idle</h2>
+          <span class="mono step" id="capStep"></span>
+        </div>
+        <p id="capText"></p>
+        <p class="note" id="rmNote" hidden>Reduced motion is on, so the intro is skipped and the orb moves slowly.</p>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Controls">
+      <div class="group">
+        <div class="group-head"><h3>State</h3><span class="hint">Keys 1–6</span></div>
+        <div class="state-grid" id="stateGrid"></div>
+        <div class="row">
+          <button class="btn btn-primary" id="seqBtn" type="button">Play a full turn</button>
+          <button class="btn" id="sessionBtn" type="button">End session</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Character</h3><label class="switch" for="charOn"><input type="checkbox" id="charOn" checked> Gestures</label></div>
+        <div class="gesture-grid" id="gestureRow">
+          <button class="btn" type="button" data-g="nod">Yes · nod</button>
+          <button class="btn" type="button" data-g="shake">No · shake</button>
+          <button class="btn" type="button" data-g="huh">Huh?</button>
+          <button class="btn" type="button" data-g="hop">Done · hop</button>
+          <button class="btn" type="button" data-g="interrupt">Interrupt</button>
+          <button class="btn" type="button" data-g="emit">Show card</button>
+          <button class="btn" type="button" data-g="point">Point</button>
+          <button class="btn" type="button" data-g="aside" id="asideBtn">Step aside</button>
+          <button class="btn" type="button" data-g="wait">Wait</button>
+        </div>
+        <p class="note" id="charNote">On its own it leans toward your pointer while listening, nods before thinking, breathes in before speaking and hops when a task finishes. The buttons fire each gesture by hand.</p>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Signal</h3><span class="hint">Drives listening and speaking</span></div>
+        <div class="seg" role="radiogroup" aria-label="Signal source" id="srcSeg">
+          <button type="button" role="radio" aria-checked="true" data-src="sim" id="srcSim">Simulated</button>
+          <button type="button" role="radio" aria-checked="false" data-src="file" id="srcFile">Audio file</button>
+          <button type="button" role="radio" aria-checked="false" data-src="mic" id="srcMic">Microphone</button>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*" hidden>
+        <p class="note" id="srcNote">A synthetic voice envelope: syllables, word gaps and phrase pauses.</p>
+        <div class="slider" id="paceRow">
+          <div class="slider-head"><label for="pace">Speech pace</label><output id="paceOut" class="mono">1.0×</output></div>
+          <input type="range" id="pace" min="0.6" max="1.8" step="0.1" value="1">
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Live signal</h3>
+        <div class="meters" id="meters"></div>
+      </div>
+
+      <div class="group">
+        <div class="group-head"><h3>Tuning</h3><button class="btn btn-small" id="copyBtn" type="button">Copy settings</button></div>
+        <div class="sliders" id="sliders"></div>
+        <textarea id="copyFallback" readonly hidden aria-label="Settings JSON"></textarea>
+      </div>
+    </aside>
+  </main>
+
+  <section class="vocab" aria-labelledby="vocabTitle">
+    <h2 id="vocabTitle">Gesture vocabulary</h2>
+    <p class="spec-intro">Each gesture means one thing. Local signals trigger the instant ones; the backend's reply triggers the ones that need understanding.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Gesture</th><th>Means</th><th>Triggered by</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>Lean</td><td>I'm listening to you</td><td>Pointer or input position while listening</td><td>Device</td></tr>
+          <tr><td>Nod</td><td>Got it, or yes</td><td>End of the user's sentence; a yes in the reply</td><td>Device, backend</td></tr>
+          <tr><td>Shake</td><td>No, or can't do that</td><td>A no or a refused request</td><td>Backend</td></tr>
+          <tr><td>Huh</td><td>I didn't understand</td><td>Low-confidence understanding</td><td>Backend</td></tr>
+          <tr><td>Breath</td><td>About to speak</td><td>Half a second before reply audio</td><td>Device</td></tr>
+          <tr><td>Interrupt</td><td>Go ahead</td><td>User starts talking while the orb speaks</td><td>Device</td></tr>
+          <tr><td>Emit</td><td>Here's what you need</td><td>A new piece of interface is assembled</td><td>Backend</td></tr>
+          <tr><td>Point</td><td>Look here</td><td>An element that needs the user's action</td><td>Backend</td></tr>
+          <tr><td>Step aside</td><td>Your turn</td><td>User working in the assembled interface</td><td>Device</td></tr>
+          <tr><td>Wait</td><td>Take your time</td><td>A decision is pending; dims after a long silence</td><td>Device</td></tr>
+          <tr><td>Hop</td><td>Done</td><td>Task finished</td><td>Backend, app</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="spec">
+    <div>
+      <h2>How each state behaves</h2>
+      <p class="spec-intro">The orb shows energy: who is talking and how loudly. The ring shows time, and only appears when there is something to wait for.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>State</th><th>Orb</th><th>Ring</th><th>Driven by</th></tr></thead>
+          <tbody>
+            <tr><td>Idle</td><td>Slow drift, slight breath, softer colour</td><td>Hidden</td><td>Time only</td></tr>
+            <tr><td>Listening</td><td>Waves travel inward; swell follows loudness</td><td>Hidden</td><td>Microphone</td></tr>
+            <tr><td>Thinking</td><td>Fast swirl, warmer core, soft pulse</td><td>Orbiting arc, because the wait has no known end</td><td>Time only</td></tr>
+            <tr><td>Working</td><td>Calm swirl, brief flash on completion</td><td>One segment per step; gaps close when done</td><td>Task progress</td></tr>
+            <tr><td>Speaking</td><td>Waves travel outward; swell follows loudness</td><td>Hidden</td><td>Reply audio</td></tr>
+            <tr><td>Error</td><td>Colour drains, motion nearly stops</td><td>Broken and grey</td><td>Connection status</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h2>What drives the motion</h2>
+      <dl>
+        <div><dt>Loudness → swell and edge wobble</dt><dd>RMS level in decibels, smoothed with a fast attack and a slower release so the orb doesn't jitter.</dd></div>
+        <div><dt>Brightness → colour</dt><dd>Spectral centroid. Brighter voices push toward pale yellow, deeper ones toward red-orange.</dd></div>
+        <div><dt>Bass and treble → wave size</dt><dd>Energy under 300 Hz moves large, slow shapes. Energy between 2.5 and 8 kHz adds fine ripple at the edge.</dd></div>
+        <div><dt>Pointer → lean</dt><dd>With gestures on, the orb's warm core and light drift toward your pointer while listening, or toward the bottom of the screen when there's no pointer.</dd></div>
+        <div><dt>Pace → flow speed</dt><dd>Syllable onsets per second over the last two seconds. Faster speech makes the gradient flow faster.</dd></div>
+      </dl>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+var clamp = function(v,a,b){ a = a===undefined?0:a; b = b===undefined?1:b; return Math.min(b, Math.max(a, v)); };
+var rand = function(a,b){ return a + Math.random()*(b-a); };
+var reduceMotion = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+var STATES = {
+  idle:      { label:"Idle",      flow:.25, energy:0,    sat:.93, dir:1,  audio:false, ring:"hidden", pulse:0,
+               text:"Waiting. Slow drift and a gentle breath. No ring, because nothing is pending." },
+  listening: { label:"Listening", flow:.5,  energy:.06,  sat:1,   dir:-1, audio:"in",  ring:"hidden", pulse:0,
+               text:"Hearing you. Waves travel inward, and the swell follows your voice." },
+  thinking:  { label:"Thinking",  flow:1.3, energy:.3,   sat:1,   dir:1,  audio:false, ring:"spin",   pulse:.2,
+               text:"Working it out. Faster swirl and a warmer core. The ring orbits because the wait has no known end." },
+  working:   { label:"Working",   flow:.6,  energy:.12,  sat:.95, dir:1,  audio:false, ring:"steps",  pulse:.06,
+               text:"Running known steps. Each segment fills as its step finishes, then the gaps close." },
+  speaking:  { label:"Speaking",  flow:.6,  energy:.12,  sat:1,   dir:1,  audio:"out", ring:"hidden", pulse:0,
+               text:"Talking back. Waves travel outward from the centre, driven by the reply's audio." },
+  error:     { label:"Error",     flow:.08, energy:-.12, sat:.08, dir:1,  audio:false, ring:"broken", pulse:0,
+               text:"Can't reach the service. Colour drains, motion slows and the ring breaks." }
+};
+var ORDER = ["idle","listening","thinking","working","speaking","error"];
+var SEQ = [["idle",1.2],["listening",3.8],["thinking",2.4],["working",null],["speaking",4.4],["idle",0]];
+
+var tune = { gain:1.2, swell:5, attack:45, release:260, flow:1, grain:.06 };
+
+var state = "idle", sessionOn = false, busy = false, orbVisible = false;
+var cur = { flow:.25, energy:0, sat:.93, dir:1 };
+var env = { amp:0, bright:.5, bass:0, treble:0 };
+var pace = 0, paceRate = 0, flash = 0, clock = 0, flowT = 0, wave = 0, scale = 1;
+var onsets = [], above = false, lastOnset = -1;
+var source = "sim", simPace = 1;
+var working = { step:0, t:0, done:false, doneT:0, fills:[0,0,0] };
+var ring = { opacity:0, gap:0, rot:0 }, ringMode = "spin";
+var seq = null;
+
+/* ---------- WebGL orb ---------- */
+var VS = "attribute vec2 aPos;void main(){gl_Position=vec4(aPos,0.,1.);}";
+var FS = [
+"#ifdef GL_FRAGMENT_PRECISION_HIGH",
+"precision highp float;",
+"#else",
+"precision mediump float;",
+"#endif",
+"uniform vec2 uRes;",
+"uniform float uTime,uFlowT,uWave,uAmp,uBright,uBass,uTreble,uSat,uEnergy,uGrain,uScale,uWaveAmt;",
+"uniform vec2 uLean;",
+"vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}",
+"vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}",
+"vec4 permute(vec4 x){return mod289(((x*34.)+1.)*x);}",
+"vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-.85373472095314*r;}",
+"float snoise(vec3 v){",
+" const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);",
+" vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);",
+" vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);",
+" vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;",
+" i=mod289(i);",
+" vec4 p=permute(permute(permute(i.z+vec4(0.,i1.z,i2.z,1.))+i.y+vec4(0.,i1.y,i2.y,1.))+i.x+vec4(0.,i1.x,i2.x,1.));",
+" float n_=.142857142857;vec3 ns=n_*D.wyz-D.xzx;",
+" vec4 j=p-49.*floor(p*ns.z*ns.z);vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.*x_);",
+" vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.-abs(x)-abs(y);",
+" vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);",
+" vec4 s0=floor(b0)*2.+1.;vec4 s1=floor(b1)*2.+1.;vec4 sh=-step(h,vec4(0.));",
+" vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;",
+" vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);",
+" vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));",
+" p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;",
+" vec4 m=max(.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.);m=m*m;",
+" return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));",
+"}",
+"float fbm(vec3 p){float s=0.;float a=.5;for(int i=0;i<2;i++){s+=a*snoise(p);p=p*1.9+vec3(1.7,-1.3,.9);a*=.45;}return s;}",
+"float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}",
+"void main(){",
+" float mm=.5*min(uRes.x,uRes.y);",
+" vec2 p=(gl_FragCoord.xy-.5*uRes)/mm;",
+" float r=length(p);",
+" float ang=atan(p.y,p.x);vec2 cs=vec2(cos(ang),sin(ang));",
+" float wob=snoise(vec3(cs*1.3,uTime*.5))*(.006+.03*uAmp)",
+"   +snoise(vec3(cs*3.5,uTime*1.4))*.018*uTreble",
+"   +snoise(vec3(cs*.9,uTime*.35))*.02*uBass;",
+" float R=.78*uScale*(1.+wob);",
+" float aa=1.6/mm;",
+" float mask=1.-smoothstep(R-aa,R+aa,r);",
+" if(mask<=0.){gl_FragColor=vec4(0.);return;}",
+" vec2 q=p/R;float q2=min(dot(q,q),1.);float z=sqrt(1.-q2);vec3 n=vec3(q,z);",
+" float t=uFlowT;",
+" vec3 sp=vec3(q-uLean*.22,z)*.62+vec3(0.,0.,t*.2);",
+" vec3 w=vec3(fbm(sp*.8+vec3(0.,t*.15,3.1)),fbm(sp*.8+vec3(5.2,1.3,-t*.12)),0.);",
+" float field=1.25*fbm(sp+1.1*w);",
+" field+=.3*sin(dot(q,vec2(.72,-.69))*2.2+w.x*2.+t*.4);",
+" float rq=length(q);",
+" field+=sin(rq*8.-uWave)*(.03+.28*uAmp)*uWaveAmt*(1.-smoothstep(.2,1.,rq));",
+" field+=snoise(n*5.5+vec3(0.,0.,uTime*1.6))*.16*uTreble;",
+" field+=uBass*.25*snoise(n*1.3+vec3(t*.5));",
+" vec2 dl=q-uLean*.45;",
+" float b=.5+.55*field+(uBright-.5)*.35+uEnergy*.18+.22*length(uLean)*exp(-4.*dot(dl,dl));",
+" vec3 cDeep=vec3(.95,.36,.15);vec3 cMid=vec3(1.,.54,.27);vec3 cLight=vec3(1.,.68,.38);vec3 cPale=vec3(1.,.84,.52);",
+" vec3 col=mix(cDeep,cMid,smoothstep(.05,.48,b));",
+" col=mix(col,cLight,smoothstep(.4,.78,b));",
+" col=mix(col,cPale,smoothstep(.72,1.05,b));",
+" vec3 L=normalize(vec3(-.4+uLean.x*.7,.5+uLean.y*.7,.8));",
+" float diff=dot(n,L)*.5+.5;",
+" col*=.86+.2*diff;",
+" col*=1.-.12*pow(1.-z,2.);",
+" col+=vec3(1.,.95,.85)*pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),18.)*.1;",
+" float gray=dot(col,vec3(.299,.587,.114));",
+" col=mix(vec3(gray),col,uSat);",
+" float hh=hash(floor(gl_FragCoord.xy)+floor(uTime*14.)*vec2(17.,31.));",
+" col+=(hh-.5)*uGrain;",
+" gl_FragColor=vec4(clamp(col,0.,1.)*mask,mask);",
+"}"
+].join("\n");
+
+var canvas = $("orb"), fallback = $("orbFallback");
+var gl = null, U = {};
+try { gl = canvas.getContext("webgl", { alpha:true, premultipliedAlpha:true, antialias:false }); } catch(e) { gl = null; }
+function compile(type, src){
+  var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(s)); return null; }
+  return s;
+}
+if (gl) {
+  var vs = compile(gl.VERTEX_SHADER, VS), fs = compile(gl.FRAGMENT_SHADER, FS), prog = null;
+  if (vs && fs) {
+    prog = gl.createProgram(); gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { console.warn(gl.getProgramInfoLog(prog)); prog = null; }
+  }
+  if (prog) {
+    gl.useProgram(prog);
+    var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, "aPos"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ["uRes","uTime","uFlowT","uWave","uAmp","uBright","uBass","uTreble","uSat","uEnergy","uGrain","uScale","uWaveAmt","uLean"].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+    gl.clearColor(0,0,0,0);
+  } else { gl = null; }
+}
+if (!gl) { canvas.hidden = true; fallback.hidden = false; }
+
+function resize(){
+  if (!gl) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+  var w = Math.max(1, Math.round(canvas.clientWidth * dpr)), h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+  gl.viewport(0, 0, w, h);
+}
+if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas); else window.addEventListener("resize", resize);
+resize();
+
+function render(){
+  if (!orbVisible) return;
+  if (!gl) { fallback.style.transform = "scale(" + scale.toFixed(4) + ")"; fallback.style.filter = "saturate(" + cur.sat.toFixed(2) + ")"; return; }
+  gl.uniform2f(U.uRes, canvas.width, canvas.height);
+  gl.uniform1f(U.uTime, clock);
+  gl.uniform1f(U.uFlowT, flowT);
+  gl.uniform1f(U.uWave, wave);
+  gl.uniform1f(U.uAmp, env.amp);
+  gl.uniform1f(U.uBright, env.bright);
+  gl.uniform1f(U.uBass, env.bass);
+  gl.uniform1f(U.uTreble, env.treble);
+  gl.uniform1f(U.uSat, cur.sat*(1 - .55*ch.dim));
+  gl.uniform1f(U.uEnergy, cur.energy + flash * .5);
+  gl.uniform1f(U.uGrain, tune.grain);
+  gl.uniform1f(U.uScale, scale);
+  gl.uniform1f(U.uWaveAmt, reduceMotion ? .3 : 1);
+  gl.uniform2f(U.uLean, ch.lean.x, -ch.lean.y);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+/* ---------- Ring ---------- */
+var NS = "http://www.w3.org/2000/svg", RR = 45, CIRC = 2*Math.PI*RR;
+var ringSvg = $("ring"), trackEls = [], fillEls = [];
+for (var i = 0; i < 3; i++) {
+  var tr = document.createElementNS(NS, "circle"), fl = document.createElementNS(NS, "circle");
+  [tr, fl].forEach(function(c){ c.setAttribute("cx", 50); c.setAttribute("cy", 50); c.setAttribute("r", RR); });
+  tr.setAttribute("class", "ring-track"); fl.setAttribute("class", "ring-fill");
+  $("ringTrack").appendChild(tr); $("ringFill").appendChild(fl);
+  trackEls.push(tr); fillEls.push(fl);
+}
+var deg = function(d){ return d * CIRC / 360; };
+function drawRing(){
+  ringSvg.style.opacity = ring.opacity.toFixed(3);
+  ringSvg.style.transform = "scale(" + (.94 + .06*ring.opacity).toFixed(4) + ")";
+  ringSvg.classList.toggle("is-broken", ringMode === "broken");
+  for (var i = 0; i < 3; i++) {
+    var span = Math.max(0, 120 - ring.gap), start = -90 + i*120 + ring.gap/2;
+    trackEls[i].setAttribute("stroke-dasharray", deg(span).toFixed(2) + " " + CIRC.toFixed(2));
+    trackEls[i].setAttribute("transform", "rotate(" + start.toFixed(2) + " 50 50)");
+    var len = 0, rot = start;
+    if (ringMode === "steps") len = span * working.fills[i];
+    else if (ringMode === "spin" && i === 0) { len = 64; rot = ring.rot - 90; }
+    fillEls[i].setAttribute("stroke-dasharray", deg(len).toFixed(2) + " " + CIRC.toFixed(2));
+    fillEls[i].setAttribute("transform", "rotate(" + rot.toFixed(2) + " 50 50)");
+    fillEls[i].style.opacity = len > .3 ? 1 : 0;
+  }
+}
+
+/* ---------- Audio ---------- */
+var actx = null, fileEl = null, fileAnalyser = null, micAnalyser = null, fileName = "";
+var td = new Float32Array(2048), fd = new Uint8Array(1024);
+function ensureCtx(){
+  if (!actx) { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; actx = new AC(); }
+  if (actx.state === "suspended") actx.resume();
+  return actx;
+}
+function makeAnalyser(ctx){ var a = ctx.createAnalyser(); a.fftSize = 2048; a.smoothingTimeConstant = .5; return a; }
+function analyse(an){
+  an.getFloatTimeDomainData(td);
+  var s = 0; for (var i = 0; i < an.fftSize; i++) s += td[i]*td[i];
+  var rms = Math.sqrt(s / an.fftSize);
+  an.getByteFrequencyData(fd);
+  var binHz = actx.sampleRate / an.fftSize, tot = 0, w = 0, b = 0, bn = 0, t = 0, tn = 0;
+  for (var k = 1; k < an.frequencyBinCount; k++) {
+    var m = fd[k] / 255, f = k * binHz;
+    tot += m; w += m * f;
+    if (f < 300) { b += m; bn++; } else if (f > 2500 && f < 8000) { t += m; tn++; }
+  }
+  var centroid = tot > 0 ? w / tot : 0, db = 20 * Math.log10(rms + 1e-8);
+  return { amp: clamp((db + 58) / 40), bright: clamp((centroid - 600) / 3200), bass: clamp(bn ? (b/bn)*1.4 : 0), treble: clamp(tn ? (t/tn)*2.2 : 0) };
+}
+
+var sim = { syl:null, gap:.3, count:0, phrase:7 };
+function simStep(dt, flavour){
+  var quiet = { amp:.02, bright:.4, bass:.04, treble:.02 };
+  if (sim.gap > 0) { sim.gap -= dt; return quiet; }
+  if (!sim.syl) sim.syl = { dur: rand(.09,.24)/simPace, t:0, peak: rand(.45,1), bright: rand(.25,.8) + flavour, cons: Math.random() < .5 };
+  var y = sim.syl; y.t += dt;
+  var ph = y.t / y.dur;
+  if (ph >= 1) {
+    sim.syl = null; sim.count++;
+    if (sim.count >= sim.phrase) { sim.count = 0; sim.phrase = 4 + Math.floor(Math.random()*9); sim.gap = rand(.35,.9); }
+    else sim.gap = Math.random() < .35 ? rand(.04,.14)/simPace : 0;
+    return quiet;
+  }
+  var e = Math.pow(Math.sin(Math.PI*ph), .7), amp = y.peak * e;
+  var onset = y.cons && ph < .22;
+  return { amp: amp, bright: clamp(y.bright*(.6 + .4*e) + (onset ? .2 : 0)), bass: amp*.8, treble: onset ? .75*(1 - ph/.22) : .15*e };
+}
+
+function sourceFeatures(dt, S){
+  if (source === "file" && fileAnalyser && fileEl && !fileEl.paused) return analyse(fileAnalyser);
+  if (source === "mic" && micAnalyser) {
+    var m = analyse(micAnalyser);
+    micQuiet = m.amp < .03 ? micQuiet + dt : 0;
+    if (micQuiet > 4 && !micWarned) { micWarned = true; warn("The page is getting silence from the microphone. Check that the right input device is selected in your browser's site settings, and that it isn't muted."); }
+    if (micWarned && m.amp > .15) { micWarned = false; setSource("mic"); }
+    return m;
+  }
+  if (source === "sim") return simStep(dt, S.audio === "out" ? .08 : 0);
+  return { amp:0, bright:.5, bass:0, treble:0 };
+}
+function syncPlayback(){
+  if (!fileEl) return;
+  var want = source === "file" && sessionOn && !busy && !!STATES[state].audio;
+  if (want && fileEl.paused) { ensureCtx(); var p = fileEl.play(); if (p && p.catch) p.catch(function(){}); }
+  if (!want && !fileEl.paused) fileEl.pause();
+}
+
+/* ---------- Character: gestures through motion, no face ---------- */
+var ch = { on:true, sq:0, sqV:0, x:0, xV:0, y:0, yV:0, rot:0, rotV:0, lean:{ x:0, y:0 }, pointer:null, breathT:9, hesitate:0,
+           gain:1.6, pointT:0, pointTarget:{ x:0, y:0 }, pointEl:null, yieldT:9, waiting:false, waitT:0, glanceT:0, dim:0 };
+var stepLabel = { text:"", until:0 };
+function flashLabel(t, dur){ stepLabel.text = t; stepLabel.until = clock + (dur || 1.6); }
+var orbBody = $("orbBody");
+var GESTURES = {
+  // squash down, small dip, spring back: "got it"
+  nod: function(){ ch.sqV += 1.9; ch.yV += 22; flashLabel("Got it"); },
+  // quick left-right wobble: "no"
+  shake: function(){
+    ch.xV += 34; ch.hesitate = .35; flashLabel("No");
+    setTimeout(function(){ ch.xV -= 52; }, 110); setTimeout(function(){ ch.xV += 40; }, 230); setTimeout(function(){ ch.xV -= 20; }, 350);
+  },
+  // tilt one way, then the other, with a brief stall in the flow: "huh?"
+  huh: function(){ ch.rotV += 95; ch.xV += 18; ch.hesitate = .5; flashLabel("Didn't understand"); setTimeout(function(){ ch.rotV -= 140; ch.xV -= 26; }, 240); },
+  // stretch up and rise, squash on landing: "done!"
+  hop: function(){ ch.yV -= 60; ch.sqV -= 1.4; flashLabel("Done"); setTimeout(function(){ ch.sqV += 1.9; }, 300); },
+  // the user talks over the reply: stop at once, pull back, listen
+  interrupt: function(){ ch.yieldT = 0; ch.yV -= 10; ch.sqV += .8; if (state === "speaking") setState("listening"); flashLabel("Go ahead"); },
+  // a piece of interface rises out of the orb
+  emit: function(){ emitCard(); flashLabel("Here you go"); },
+  // lean toward the element that needs action
+  point: function(){
+    if (!cardOn) { emitCard(); setTimeout(function(){ pointAt($("cardConfirm"), 1.8, true); }, 750); }
+    else pointAt($("cardConfirm"), 1.8, true);
+    flashLabel("Look here");
+  },
+  // shrink into the corner so the interface has the room
+  aside: function(){ if (layName === "aside") comeBack(); else { setLayout("aside"); if (cardOn) cardSlot.classList.add("is-centered"); flashLabel("Your turn"); } },
+  // slow breath, glance at the pending element now and then, dim after a long silence
+  wait: function(){ ch.waiting = true; ch.waitT = 0; ch.glanceT = 1.2; }
+};
+function gesture(name){
+  if (!(ch.on && sessionOn && !busy && !reduceMotion)) return;
+  if (name !== "wait") stopWaiting();
+  GESTURES[name]();
+}
+function stopWaiting(){ ch.waiting = false; }
+
+/* Layout: where the orb sits while interface is on screen */
+var LAYOUTS = { center:{ dx:0, dy:0, s:1 }, room:{ dx:0, dy:-16, s:.64 }, aside:{ dx:-37, dy:-37, s:.2 } };
+var lay = { dx:0, dy:0, s:1 }, layName = "center", layTween = 0;
+function applyLay(){ $("orbWrap").style.transform = "translate(" + lay.dx.toFixed(3) + "%," + lay.dy.toFixed(3) + "%) scale(" + lay.s.toFixed(4) + ")"; }
+function setLayout(name, ms){
+  layName = name;
+  var from = { dx:lay.dx, dy:lay.dy, s:lay.s }, to = LAYOUTS[name], id = ++layTween;
+  $("stage").classList.toggle("is-aside", name === "aside");
+  $("asideBtn").textContent = name === "aside" ? "Come back" : "Step aside";
+  return tween(ms || 650, function(p){
+    if (id !== layTween) return;
+    lay.dx = from.dx + (to.dx - from.dx)*p; lay.dy = from.dy + (to.dy - from.dy)*p; lay.s = from.s + (to.s - from.s)*p;
+    applyLay();
+  }, springy);
+}
+function resetLayoutNow(){ layTween++; layName = "center"; lay = { dx:0, dy:0, s:1 }; $("stage").classList.remove("is-aside"); $("asideBtn").textContent = "Step aside"; }
+function comeBack(){ setLayout(cardOn ? "room" : "center"); cardSlot.classList.remove("is-centered"); }
+
+/* The example interface the orb assembles */
+var cardSlot = $("cardSlot"), uiCard = $("uiCard"), cardOn = false;
+function orbCenter(){ var r = $("orbWrap").getBoundingClientRect(); return { x:r.left + r.width/2, y:r.top + r.height/2, half:r.width/2 }; }
+function emitCard(){
+  cardOn = true; cardSlot.hidden = false;
+  cardSlot.classList.toggle("is-centered", layName === "aside");
+  if (layName !== "aside") setLayout("room");
+  flash = Math.max(flash, .6); ch.sqV += 1.3;
+  var o = orbCenter(), r = cardSlot.getBoundingClientRect();
+  var dx = o.x - (r.left + r.width/2), dy = o.y - (r.top + r.height/2);
+  uiCard.style.opacity = 0;
+  return tween(720, function(p){
+    var k = 1 - p;
+    uiCard.style.transform = "translate(" + (dx*k).toFixed(1) + "px," + (dy*k).toFixed(1) + "px) scale(" + (.15 + .85*p).toFixed(3) + ")";
+    uiCard.style.opacity = Math.min(1, p*2.2).toFixed(3);
+  }, springy);
+}
+function dismissCard(){
+  if (!cardOn) return Promise.resolve();
+  var o = orbCenter(), r = uiCard.getBoundingClientRect();
+  var dx = o.x - (r.left + r.width/2), dy = o.y - (r.top + r.height/2);
+  return tween(380, function(p){
+    uiCard.style.transform = "translate(" + (dx*p).toFixed(1) + "px," + (dy*p).toFixed(1) + "px) scale(" + (1 - .85*p).toFixed(3) + ")";
+    uiCard.style.opacity = (1 - p).toFixed(3);
+  }, function(x){ return x*x*x; }).then(hideCardNow);
+}
+function hideCardNow(){ cardOn = false; cardSlot.hidden = true; cardSlot.classList.remove("is-centered"); uiCard.style.transform = ""; uiCard.style.opacity = ""; clearPoint(); }
+function pointAt(el, dur, jab){
+  if (!el || cardSlot.hidden) return;
+  var o = orbCenter(), r = el.getBoundingClientRect();
+  var vx = r.left + r.width/2 - o.x, vy = r.top + r.height/2 - o.y, len = Math.hypot(vx, vy) || 1;
+  clearPoint();
+  ch.pointTarget = { x:vx/len, y:vy/len }; ch.pointT = dur; ch.pointEl = el; el.classList.add("is-pointed");
+  if (jab) { ch.xV += ch.pointTarget.x*16; ch.yV += ch.pointTarget.y*16; }
+}
+function clearPoint(){ if (ch.pointEl) ch.pointEl.classList.remove("is-pointed"); ch.pointEl = null; ch.pointT = 0; }
+$("cardConfirm").addEventListener("click", function(){
+  if (busy) return;
+  stopWaiting(); clearPoint();
+  dismissCard().then(function(){ setLayout("center"); gesture("hop"); });
+});
+$("cardChange").addEventListener("click", function(){
+  if (busy || !sessionOn) return;
+  stopWaiting(); clearPoint();
+  if (layName === "aside") comeBack();
+  setState("listening"); flashLabel("Listening for a new time");
+});
+$("orbWrap").addEventListener("click", function(){ if (layName === "aside" && sessionOn && !busy) comeBack(); });
+$("stage").addEventListener("pointerdown", function(){ if (ch.waiting) stopWaiting(); });
+function stepCharacter(dt){
+  // damped springs (semi-implicit Euler), sub-stepped at 240 Hz so they feel the same at any frame rate
+  var n = Math.max(1, Math.ceil(dt*240)), h = dt/n;
+  for (var i = 0; i < n; i++) {
+    ch.sqV += (-170*ch.sq - 11*ch.sqV)*h;   ch.sq += ch.sqV*h;
+    ch.yV  += (-150*ch.y  - 10*ch.yV)*h;    ch.y  += ch.yV*h;
+    ch.xV  += (-140*ch.x  - 11*ch.xV)*h;    ch.x  += ch.xV*h;
+    ch.rotV+= (-160*ch.rot - 10*ch.rotV)*h; ch.rot+= ch.rotV*h;
+  }
+  ch.breathT += dt; ch.yieldT += dt; ch.hesitate = Math.max(0, ch.hesitate - dt);
+  if (ch.pointT > 0) { ch.pointT -= dt; if (ch.pointT <= 0) clearPoint(); }
+  if (ch.waiting) {
+    ch.waitT += dt; ch.glanceT -= dt;
+    if (ch.glanceT <= 0) { if (cardOn) pointAt($("cardConfirm"), .9, false); ch.glanceT = 3.2; }
+  }
+  var dimT = ch.waiting ? clamp((ch.waitT - 8)/2) : 0;
+  ch.dim += (dimT - ch.dim)*(1 - Math.exp(-dt/.5));
+  var tx = 0, ty = 0, gainT = 1.6;
+  if (ch.on && sessionOn && !busy) {
+    if (ch.pointT > 0) { tx = ch.pointTarget.x; ty = ch.pointTarget.y; gainT = 4.5; }
+    else if (state === "listening") {
+      if (ch.pointer) { tx = ch.pointer.x; ty = ch.pointer.y; } else { tx = 0; ty = .55; }
+      var len = Math.hypot(tx, ty); if (len > 1) { tx /= len; ty /= len; }
+    }
+  }
+  var kL = 1 - Math.exp(-dt/.28);
+  ch.lean.x += (tx - ch.lean.x)*kL; ch.lean.y += (ty - ch.lean.y)*kL; ch.gain += (gainT - ch.gain)*kL;
+  var t = "translate(" + (ch.lean.x*ch.gain + ch.x).toFixed(3) + "%," + (ch.lean.y*ch.gain + ch.y).toFixed(3) + "%) rotate(" + ch.rot.toFixed(2) + "deg) scale(" + (1 + ch.sq*.55).toFixed(4) + "," + (1 - ch.sq).toFixed(4) + ")";
+  orbBody.style.transform = t;
+  orbBody.style.opacity = (1 - .3*ch.dim).toFixed(3);
+}
+function breathAmount(){ // inhale before speaking, slow breath while waiting, shrink back on interrupt
+  if (!ch.on || reduceMotion) return 0;
+  var a = 0;
+  if (state === "speaking" && ch.breathT < .6) a += Math.sin(Math.PI*ch.breathT/.6)*.035;
+  if (ch.waiting) a += .018*Math.sin(ch.waitT*1.15);
+  if (ch.yieldT < 1.5) a -= .07*(1 - Math.exp(-ch.yieldT/.06))*Math.exp(-ch.yieldT/.45);
+  return a;
+}
+$("stage").addEventListener("pointermove", function(e){
+  var o = orbCenter(), half = Math.max(o.half, 40);
+  ch.pointer = { x:(e.clientX - o.x)/half, y:(e.clientY - o.y)/half };
+});
+$("stage").addEventListener("pointerleave", function(){ ch.pointer = null; });
+Array.prototype.forEach.call(document.querySelectorAll("#gestureRow button"), function(b){
+  b.addEventListener("click", function(){ gesture(b.dataset.g); });
+});
+function updateGestureButtons(){
+  var ok = ch.on && sessionOn && !busy;
+  Array.prototype.forEach.call(document.querySelectorAll("#gestureRow button"), function(b){ b.disabled = !ok; });
+}
+$("charOn").addEventListener("change", function(e){
+  ch.on = e.target.checked;
+  $("charNote").textContent = ch.on
+    ? "Leans toward your pointer while listening, nods before thinking, breathes in before speaking and hops when a task finishes."
+    : "Gestures are off. The orb only reacts to sound and state.";
+  updateGestureButtons();
+});
+if (reduceMotion) $("charNote").textContent = "Reduced motion is on, so gestures are paused.";
+
+/* ---------- UI: states ---------- */
+var stateBtns = {};
+ORDER.forEach(function(k, idx){
+  var b = document.createElement("button");
+  b.type = "button"; b.className = "btn state-btn"; b.dataset.state = k; b.setAttribute("aria-pressed", "false");
+  b.innerHTML = "<span>" + STATES[k].label + "</span><kbd>" + (idx+1) + "</kbd>";
+  b.addEventListener("click", function(){ if (sessionOn && !busy) setState(k); });
+  $("stateGrid").appendChild(b); stateBtns[k] = b;
+});
+function setState(k, fromSeq){
+  if (!fromSeq && seq) { seq = null; updateSeqBtn(); }
+  var prev = state;
+  state = k; stopWaiting();
+  if (prev === "listening" && k === "thinking") gesture("nod");
+  if (k === "speaking" && prev !== "speaking") ch.breathT = 0;
+  if (k === "working") { working.step = 0; working.t = 0; working.done = false; working.doneT = 0; working.fills = [0,0,0]; }
+  ORDER.forEach(function(s){ stateBtns[s].setAttribute("aria-pressed", s === k ? "true" : "false"); });
+  $("capTitle").textContent = STATES[k].label;
+  $("capText").textContent = STATES[k].text;
+  syncPlayback();
+}
+function setControlsEnabled(on){
+  ORDER.forEach(function(s){ stateBtns[s].disabled = !on; });
+  $("seqBtn").disabled = !on;
+  $("sessionBtn").disabled = busy;
+  updateGestureButtons();
+}
+function updateSeqBtn(){ $("seqBtn").textContent = seq ? "Stop the turn" : "Play a full turn"; }
+$("seqBtn").addEventListener("click", function(){
+  if (seq) { seq = null; updateSeqBtn(); setState("idle"); return; }
+  if (!sessionOn || busy) return;
+  hideCardNow(); stopWaiting(); if (layName !== "center") setLayout("center", 400);
+  seq = { i:0, t:0, emitted:false }; setState(SEQ[0][0], true); updateSeqBtn();
+});
+document.addEventListener("keydown", function(e){
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  var tag = (e.target && e.target.tagName) || "";
+  if (tag === "TEXTAREA" || (tag === "INPUT" && e.target.type !== "range")) return;
+  var n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 6 && sessionOn && !busy) setState(ORDER[n-1]);
+});
+
+/* ---------- UI: signal source ---------- */
+var srcButtons = { sim:$("srcSim"), file:$("srcFile"), mic:$("srcMic") };
+function setSource(s){
+  source = s;
+  Object.keys(srcButtons).forEach(function(k){ srcButtons[k].setAttribute("aria-checked", k === s ? "true" : "false"); });
+  $("paceRow").hidden = s !== "sim";
+  var note = $("srcNote"); note.classList.remove("warn");
+  if (s === "sim") note.textContent = "A synthetic voice envelope: syllables, word gaps and phrase pauses.";
+  if (s === "file") {
+    note.textContent = "";
+    note.appendChild(document.createTextNode("Playing " + fileName + " on loop during listening and speaking. "));
+    var c = document.createElement("button"); c.type = "button"; c.className = "linkish"; c.textContent = "Change file";
+    c.addEventListener("click", function(){ $("fileInput").click(); });
+    note.appendChild(c);
+  }
+  if (s === "mic") note.textContent = "Live microphone. It drives the orb in Listening and Speaking.";
+  syncPlayback();
+}
+srcButtons.sim.addEventListener("click", function(){ setSource("sim"); });
+srcButtons.file.addEventListener("click", function(){ if (fileEl && fileEl.src) setSource("file"); else $("fileInput").click(); });
+srcButtons.mic.addEventListener("click", function(){ if (micAnalyser) setSource("mic"); else startMic(); });
+$("fileInput").addEventListener("change", function(e){
+  var f = e.target.files && e.target.files[0]; if (!f) return;
+  var ctx = ensureCtx();
+  if (!ctx) { warn("This browser can't analyse audio files."); return; }
+  if (!fileEl) {
+    fileEl = new Audio(); fileEl.loop = true;
+    var src = ctx.createMediaElementSource(fileEl);
+    fileAnalyser = makeAnalyser(ctx); src.connect(fileAnalyser); fileAnalyser.connect(ctx.destination);
+  }
+  if (fileEl.src) URL.revokeObjectURL(fileEl.src);
+  fileEl.src = URL.createObjectURL(f); fileName = f.name;
+  setSource("file");
+  if (sessionOn && !busy && !STATES[state].audio) setState("speaking");
+  e.target.value = "";
+});
+function warn(msg){ var n = $("srcNote"); n.textContent = msg; n.classList.add("warn"); }
+var micStream = null, micSource = null, micSink = null, micQuiet = 0, micWarned = false;
+function startMic(){
+  var ctx = ensureCtx();
+  var fail = function(err){
+    setSource(source);
+    var name = err && err.name;
+    if (name === "NotAllowedError" || name === "SecurityError") warn("The microphone is blocked here. Open the standalone copy of this page in Chrome or Safari to try it with your voice, or load an audio file instead.");
+    else if (name === "NotFoundError") warn("No microphone was found. Plug one in or pick an input device in your system settings, then try again.");
+    else warn("The microphone couldn't start" + (name ? " (" + name + ")" : "") + ". Close other apps using it and try again.");
+  };
+  if (!ctx || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { fail(); return; }
+  srcButtons.mic.textContent = "Starting…";
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:true } })
+  .then(function(stream){
+    // Keep references so the browser doesn't garbage-collect the live input.
+    micStream = stream;
+    micSource = ctx.createMediaStreamSource(stream);
+    micAnalyser = makeAnalyser(ctx);
+    // Route through a silent gain into the destination: some browsers (Safari especially)
+    // don't process nodes that aren't connected to the output, so the analyser reads zeros.
+    micSink = ctx.createGain(); micSink.gain.value = 0;
+    micSource.connect(micAnalyser); micAnalyser.connect(micSink); micSink.connect(ctx.destination);
+    var track = stream.getAudioTracks()[0];
+    if (track) track.addEventListener("ended", function(){ micAnalyser = null; warn("The microphone stopped. Click Microphone to start it again."); });
+    // The permission prompt can leave the audio context suspended; wake it now.
+    return ctx.resume().then(function(){
+      srcButtons.mic.textContent = "Microphone";
+      micQuiet = 0; micWarned = false;
+      setSource("mic");
+      if (sessionOn && !busy && !STATES[state].audio) setState("listening");
+    });
+  })
+  .catch(function(err){ srcButtons.mic.textContent = "Microphone"; fail(err); });
+}
+$("pace").addEventListener("input", function(e){ simPace = parseFloat(e.target.value); $("paceOut").textContent = simPace.toFixed(1) + "×"; });
+
+/* ---------- UI: meters + tuning ---------- */
+var METERS = [["amp","Loudness"],["bright","Brightness"],["bass","Bass"],["treble","Treble"],["pace","Pace"]];
+var meterEls = {};
+METERS.forEach(function(m){
+  var row = document.createElement("div"); row.className = "meter";
+  row.innerHTML = "<span>" + m[1] + "</span><div class=\"bar\"><i></i></div><output class=\"mono\">0.00</output>";
+  $("meters").appendChild(row);
+  meterEls[m[0]] = { bar: row.querySelector("i"), out: row.querySelector("output") };
+});
+var SLIDERS = [
+  { id:"gain",    label:"Reactivity", min:.4, max:2.5, step:.1, fmt:function(v){ return v.toFixed(1) + "×"; } },
+  { id:"swell",   label:"Max swell",  min:0,  max:10,  step:.5, fmt:function(v){ return v + "%"; } },
+  { id:"attack",  label:"Attack",     min:10, max:200, step:5,  fmt:function(v){ return v + " ms"; } },
+  { id:"release", label:"Release",    min:60, max:700, step:10, fmt:function(v){ return v + " ms"; } },
+  { id:"flow",    label:"Flow speed", min:.3, max:2.5, step:.1, fmt:function(v){ return v.toFixed(1) + "×"; } },
+  { id:"grain",   label:"Grain",      min:0,  max:.14, step:.01,fmt:function(v){ return Math.round(v*100) + ""; } }
+];
+SLIDERS.forEach(function(s){
+  var wrap = document.createElement("div"); wrap.className = "slider";
+  wrap.innerHTML = "<div class=\"slider-head\"><label for=\"t-" + s.id + "\">" + s.label + "</label><output class=\"mono\"></output></div>" +
+    "<input type=\"range\" id=\"t-" + s.id + "\" min=\"" + s.min + "\" max=\"" + s.max + "\" step=\"" + s.step + "\" value=\"" + tune[s.id] + "\">";
+  var out = wrap.querySelector("output"), inp = wrap.querySelector("input");
+  out.textContent = s.fmt(tune[s.id]);
+  inp.addEventListener("input", function(){ tune[s.id] = parseFloat(inp.value); out.textContent = s.fmt(tune[s.id]); });
+  $("sliders").appendChild(wrap);
+});
+$("copyBtn").addEventListener("click", function(){
+  var states = {};
+  ORDER.forEach(function(k){ var S = STATES[k]; states[k] = { flow:S.flow, energy:S.energy, saturation:S.sat, waves: S.dir > 0 ? "outward" : "inward", ring:S.ring, audio: S.audio || "none", pulse:S.pulse }; });
+  var json = JSON.stringify({
+    component:"noui-orb",
+    geometry:{ orbRadius:"39% of box", ringRadius:"45% of box", ringStroke:"0.5% of box" },
+    character:{ gestures:ch.on, vocabulary:["lean","nod","shake","huh","breath","interrupt","emit","point","step aside","wait","hop"], layouts:LAYOUTS },
+    tuning:{ reactivity:tune.gain, maxSwellPercent:tune.swell, attackMs:tune.attack, releaseMs:tune.release, flowSpeed:tune.flow, grain:tune.grain },
+    signal:{ loudness:"RMS dB, -58..-18 mapped to 0..1", brightness:"spectral centroid 600..3800 Hz", bass:"< 300 Hz", treble:"2.5-8 kHz", pace:"onsets per second over 2 s, /5" },
+    states:states
+  }, null, 2);
+  var btn = $("copyBtn"), ta = $("copyFallback");
+  var done = function(){ btn.textContent = "Copied"; setTimeout(function(){ btn.textContent = "Copy settings"; }, 1600); };
+  var fallbackCopy = function(){ ta.hidden = false; ta.value = json; ta.focus(); ta.select(); btn.textContent = "Select and copy below"; };
+  try { navigator.clipboard.writeText(json).then(done, fallbackCopy); } catch(e) { fallbackCopy(); }
+});
+
+/* ---------- Intro / outro (logo → orb) ---------- */
+var orbWrap = $("orbWrap"), mark = $("mark"), letters = $("markLetters"), stem = $("markStem"), dot = $("markDot");
+var O_R = 20;                                  // optical size: 87% of a full-height (23) disc, so its weight matches the strokes
+var SMALL = { dx:10.5, dy:-9.45, s:.2064 * O_R / 23 };   // the orb sitting exactly on the mark's o
+function orbAt(k){ // k = 1 on the o, k = 0 full size
+  orbWrap.style.transform = "translate(" + (SMALL.dx*k).toFixed(3) + "%," + (SMALL.dy*k).toFixed(3) + "%) scale(" + (1 + (SMALL.s - 1)*k).toFixed(4) + ")";
+}
+function tween(ms, fn, ease){
+  ease = ease || function(x){ return x; };
+  return new Promise(function(res){
+    var t0 = performance.now();
+    (function step(now){ var p = Math.min(1, (now - t0)/ms); fn(ease(p)); if (p < 1) requestAnimationFrame(step); else res(); })(t0);
+  });
+}
+var wait = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+var easeInOut = function(x){ return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2; };
+var easeOut = function(x){ return 1 - Math.pow(1 - x, 3); };
+var easeBack = function(x){ var c1 = 2.2, c3 = c1 + 1; return 1 + c3*Math.pow(x - 1, 3) + c1*Math.pow(x - 1, 2); };
+var springy = function(x){ return 1 - Math.exp(-6*x)*Math.cos(9*x); };
+var setA = function(el, k, v){ el.setAttribute(k, typeof v === "number" ? v.toFixed(3) : v); };
+
+function resetMark(){
+  mark.style.opacity = 1; mark.style.visibility = "visible";
+  letters.style.opacity = 1; stem.style.opacity = 1;
+  setA(stem, "y1", 68); setA(dot, "cy", 55); setA(dot, "r", 5.5); dot.style.opacity = 1;
+}
+function finishOn(){
+  busy = false; sessionOn = true; orbVisible = true;
+  orbWrap.style.opacity = 1; orbAt(0); resetLayoutNow(); mark.style.visibility = "hidden";
+  $("sessionBtn").textContent = "End session"; setControlsEnabled(true); setState("idle");
+}
+function intro(){
+  hideCardNow(); stopWaiting(); resetLayoutNow();
+  busy = true; setControlsEnabled(false); seq = null; updateSeqBtn(); setState("idle", true);
+  resetMark(); orbWrap.style.opacity = 0; orbVisible = false; orbAt(1);
+  $("capTitle").textContent = "Intro"; $("capText").textContent = "The i flings its dot up, it becomes the o, and the o becomes the orb.";
+  if (reduceMotion) { finishOn(); return; }
+  wait(450)
+  .then(function(){ return tween(240, function(p){ setA(stem, "y1", 68 + 11*p); setA(dot, "cy", 55 + 11*p); }, easeInOut); })
+  .then(function(){ return Promise.all([
+      tween(460, function(p){ setA(stem, "y1", 79 - 11*p); }, easeBack),
+      tween(420, function(p){ setA(dot, "cy", 66 - 33*p); setA(dot, "r", 5.5 + 3*p); }, easeOut)
+  ]); })
+  .then(function(){ return tween(300, function(p){ setA(dot, "r", 8.5 + (O_R - 8.5)*p); }, easeBack); })
+  .then(function(){ return wait(750); })
+  .then(function(){ orbVisible = true; orbWrap.style.opacity = 1; return tween(180, function(p){ dot.style.opacity = 1 - p; }); })
+  .then(function(){
+    tween(300, function(p){ letters.style.opacity = 1 - p; stem.style.opacity = 1 - p; });
+    return tween(1000, function(p){ orbAt(1 - p); }, springy);
+  })
+  .then(finishOn);
+}
+function outro(){
+  if (layName !== "center" || cardOn) {
+    busy = true; setControlsEnabled(false); stopWaiting();
+    var leave = cardOn ? dismissCard() : Promise.resolve();
+    leave.then(function(){ return setLayout("center", 450); }).then(function(){ busy = false; outro(); });
+    return;
+  }
+  busy = true; seq = null; updateSeqBtn(); setState("idle", true); setControlsEnabled(false);
+  $("capTitle").textContent = "Session ended"; $("capText").textContent = "The orb settles back into the o.";
+  mark.style.visibility = "visible"; mark.style.opacity = 1; letters.style.opacity = 0; stem.style.opacity = 0;
+  setA(stem, "y1", 68); setA(dot, "cy", 33); setA(dot, "r", O_R); dot.style.opacity = 0;
+  var end = function(){
+    orbWrap.style.opacity = 0; orbVisible = false; sessionOn = false; busy = false;
+    $("sessionBtn").textContent = "Start session"; setControlsEnabled(false); $("sessionBtn").disabled = false;
+    $("capText").textContent = "Start a session to replay the intro.";
+  };
+  if (reduceMotion) { letters.style.opacity = 1; stem.style.opacity = 1; dot.style.opacity = 1; orbAt(1); end(); return; }
+  tween(750, function(p){ orbAt(p); }, easeInOut)
+  .then(function(){ return tween(140, function(p){ dot.style.opacity = p; }); })
+  .then(function(){
+    orbWrap.style.opacity = 0; orbVisible = false;
+    return tween(420, function(p){ letters.style.opacity = p; stem.style.opacity = p; });
+  })
+  .then(end);
+}
+$("sessionBtn").addEventListener("click", function(){ if (busy) return; if (sessionOn) outro(); else intro(); });
+
+/* ---------- Main loop ---------- */
+function update(dt){
+  var S = STATES[state];
+  clock += dt;
+
+  var k = 1 - Math.exp(-dt/.35);
+  cur.flow += (S.flow - cur.flow)*k; cur.energy += (S.energy - cur.energy)*k;
+  cur.sat += (S.sat - cur.sat)*k; cur.dir += (S.dir - cur.dir)*k;
+
+  stepCharacter(dt);
+  var f;
+  var inhaling = ch.on && !reduceMotion && state === "speaking" && ch.breathT < .55;
+  if (S.audio && sessionOn && !busy && !inhaling) f = sourceFeatures(dt, S);
+  else if (S.pulse) { var pz = S.pulse*(.55 + .45*Math.sin(clock*3.4)); f = { amp:pz, bright:.6, bass:pz*.5, treble:.04 }; }
+  else f = { amp:0, bright:.5, bass:0, treble:0 };
+  var amp = clamp(f.amp * tune.gain);
+
+  var tau = (amp > env.amp ? tune.attack : tune.release)/1000;
+  env.amp += (amp - env.amp)*(1 - Math.exp(-dt/tau));
+  var k2 = 1 - Math.exp(-dt/.12);
+  env.bright += (f.bright - env.bright)*k2; env.bass += (clamp(f.bass*tune.gain) - env.bass)*k2; env.treble += (clamp(f.treble*tune.gain) - env.treble)*k2;
+
+  if (env.amp > .38 && !above) { above = true; if (clock - lastOnset > .08) { onsets.push(clock); lastOnset = clock; } }
+  else if (env.amp < .22) above = false;
+  while (onsets.length && clock - onsets[0] > 2) onsets.shift();
+  paceRate = onsets.length/2;
+  pace += (clamp(paceRate/5) - pace)*(1 - Math.exp(-dt/.6));
+
+  flash *= Math.exp(-dt/.45);
+  var motion = reduceMotion ? .35 : 1;
+  flowT += dt * cur.flow * tune.flow * (1 + pace*.8) * motion * (ch.hesitate > 0 ? .25 : 1) * (ch.waiting ? .6 - .3*ch.dim : 1);
+  wave += dt * cur.dir * (1.2 + 5*env.amp) * motion;
+  scale = 1 + (tune.swell/100)*env.amp + (state === "idle" ? .012 : .004)*Math.sin(clock*1.35)*motion + flash*.035 + breathAmount();
+
+  // working steps
+  if (state === "working") {
+    if (!working.done) {
+      working.t += dt; var dur = 1.45;
+      working.fills[working.step] = clamp(working.t/dur);
+      if (working.t >= dur) { working.step++; working.t = 0; if (working.step >= 3) { working.done = true; working.doneT = 0; flash = 1; gesture("hop"); } }
+    } else {
+      working.doneT += dt;
+      if (!seq && working.doneT > 2.4) { working.step = 0; working.t = 0; working.done = false; working.doneT = 0; working.fills = [0,0,0]; }
+    }
+    $("capStep").textContent = working.done ? "3 of 3 done" : "Step " + (working.step + 1) + " of 3";
+  } else {
+    var lbl = ch.waiting ? (ch.dim > .5 ? "Waiting · dimmed" : "Waiting for you") : (clock < stepLabel.until ? stepLabel.text : "");
+    if ($("capStep").textContent !== lbl) $("capStep").textContent = lbl;
+  }
+
+  // ring
+  var targetOp = S.ring === "hidden" ? 0 : 1;
+  if (S.ring !== "hidden") ringMode = S.ring;
+  var gapT = ringMode === "steps" ? 7 : ringMode === "broken" ? 34 : 0;
+  if (state === "working" && working.done) { gapT = 0; if (working.doneT > .5) targetOp = 0; }
+  if (busy || !sessionOn) targetOp = 0;
+  ring.gap += (gapT - ring.gap)*(1 - Math.exp(-dt/.12));
+  ring.opacity += (targetOp - ring.opacity)*(1 - Math.exp(-dt/.18));
+  ring.rot = (ring.rot + dt*290*motion) % 360;
+
+  // sequence
+  if (seq) {
+    seq.t += dt;
+    if (SEQ[seq.i][0] === "speaking" && !seq.emitted && seq.t > 1.6) { seq.emitted = true; gesture("emit"); }
+    var stepDef = SEQ[seq.i], stepDone = stepDef[1] === null ? (working.done && working.doneT > .9) : seq.t >= stepDef[1];
+    if (stepDone) {
+      seq.i++; seq.t = 0;
+      if (seq.i >= SEQ.length) {
+        seq = null; updateSeqBtn();
+        setTimeout(function(){ if (seq || !cardOn) return; gesture("point"); setTimeout(function(){ if (!seq && cardOn) gesture("wait"); }, 2200); }, 400);
+      }
+      else setState(SEQ[seq.i][0], true);
+    }
+  }
+}
+function drawMeters(){
+  var v = { amp:env.amp, bright:env.bright, bass:env.bass, treble:env.treble, pace:pace };
+  for (var key in meterEls) {
+    meterEls[key].bar.style.width = (clamp(v[key])*100).toFixed(1) + "%";
+    meterEls[key].out.textContent = key === "pace" ? paceRate.toFixed(1) + "/s" : v[key].toFixed(2);
+  }
+}
+var last = performance.now(), running = true;
+function frame(now){
+  if (!running) return;
+  var dt = Math.min(.05, (now - last)/1000); last = now;
+  update(dt); render(); drawRing(); drawMeters();
+  requestAnimationFrame(frame);
+}
+document.addEventListener("visibilitychange", function(){
+  running = !document.hidden;
+  if (running) { last = performance.now(); requestAnimationFrame(frame); }
+});
+
+if (reduceMotion) $("rmNote").hidden = false;
+setSource("sim");
+setControlsEnabled(false);
+requestAnimationFrame(frame);
+intro();
+})();
+</script>
+</body></html>
