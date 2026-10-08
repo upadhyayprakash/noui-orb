@@ -147,3 +147,39 @@ test("ending the session plays the outro, and starting it plays the intro again"
   await page.waitForFunction(() => document.getElementById("sessionBtn")!.textContent === "End session", null, { timeout: 30000 });
   await page.waitForFunction(() => !(document.getElementById("seqBtn") as HTMLButtonElement).disabled);
 });
+
+test("Get started: every sample is on the page, copyable, and the runnable ones run", async ({ page }) => {
+  const errors = await ready(page);
+  const names = await page.$$eval(".code[data-snippet]", (els) => els.map((e) => (e as HTMLElement).dataset.snippet));
+  expect(names).toEqual(["install", "html", "states", "mic", "reply", "gestures", "emit", "react"]);
+  expect(await page.locator(".copy").count()).toBe(8);
+  expect(await page.textContent('.code[data-snippet="install"] pre')).toBe("npm i @nouisi/orb");
+
+  // The samples marked data-run are executed against the live element, as written (imports removed).
+  const run = await page.evaluate(async () => {
+    const out: Record<string, string> = {};
+    const Async = Object.getPrototypeOf(async () => {}).constructor;
+    for (const el of document.querySelectorAll(".code[data-run]")) {
+      const name = (el as HTMLElement).dataset.snippet!;
+      const body = el.querySelector("code")!.textContent!.replace(/^import .*$/gm, "");
+      try {
+        await new Async("orb", body)((window as any).orb);
+        out[name] = "ok";
+      } catch (e) {
+        out[name] = String(e);
+      }
+    }
+    return out;
+  });
+  expect(run).toEqual({ states: "ok", mic: "ok", gestures: "ok" });
+  await page.waitForTimeout(300);
+  expect(errors).toEqual([]);
+});
+
+test("Get started: the Copy button copies the sample", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await ready(page);
+  await page.click('.code[data-snippet="install"] .copy');
+  await expect(page.locator('.code[data-snippet="install"] .copy')).toHaveText("Copied");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("npm i @nouisi/orb");
+});

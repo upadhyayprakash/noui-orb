@@ -17,6 +17,7 @@
     <p class="eyebrow">noui-orb · web component</p>
     <h1>noui orb</h1>
     <p class="lede"><code>&lt;noui-orb&gt;</code> is the orange o from the mark as a live voice surface. This page is built only on the component's public API. Switch states, change what drives it, and tune the motion until it feels right.</p>
+    <p class="top-links"><a href="#get-started">Get started</a> · <a href="https://github.com/upadhyayprakash/noui-orb">GitHub</a></p>
   </header>
 
   <main class="bench">
@@ -99,6 +100,53 @@
       </div>
     </aside>
   </main>
+
+  <section class="guide" id="get-started" aria-labelledby="guideTitle">
+    <h2 id="guideTitle">Get started</h2>
+    <p class="spec-intro">Everything on this page is built with the calls below. <code>&lt;noui-orb&gt;</code> is a standard Web Component, so it works in plain HTML and in any framework. It is a scripted early release: it draws and reacts, it does not understand speech. Your app does the listening and the thinking and tells the orb what is happening.</p>
+
+    <ol class="steps">
+      <li>
+        <h3>1. Install</h3>
+        <p>Add the package, then import it once. Importing registers the <code>&lt;noui-orb&gt;</code> tag.</p>
+        <div class="code" data-snippet="install"></div>
+        <p class="note">Not on npm yet: the first release (0.1.0) is on its way, and this page already runs the same code.</p>
+      </li>
+      <li>
+        <h3>2. Put it on the page</h3>
+        <p>The orb fills its box, so size it from outside and keep it square. <code>gestures</code> turns on character motion (leaning, nodding, hopping). <code>intro="auto"</code> plays the logo-to-orb intro on load.</p>
+        <div class="code" data-snippet="html"></div>
+      </li>
+      <li>
+        <h3>3. Tell it what your app is doing</h3>
+        <p>Set the state as your app moves through a turn. For work with known steps, give it progress and the ring fills; without progress it shows a spinning arc and never fakes a percentage.</p>
+        <div class="code" data-snippet="states" data-run></div>
+      </li>
+      <li>
+        <h3>4. Give it a voice</h3>
+        <p>You ask for the microphone and hand the orb the stream; it only listens to loudness and tone, and nothing leaves the page. Call this from a click or tap, on an HTTPS page. If you analyse audio yourself, push levels instead.</p>
+        <div class="code" data-snippet="mic" data-run></div>
+        <div class="code" data-snippet="reply"></div>
+      </li>
+      <li>
+        <h3>5. Let it react</h3>
+        <p>Gestures each mean one thing (see the vocabulary below). The orb nods by itself when it starts thinking and hops when a task finishes. Ask for others when your app knows better.</p>
+        <div class="code" data-snippet="gestures" data-run></div>
+      </li>
+      <li>
+        <h3>6. Assemble interface out of it</h3>
+        <p>The orb is where your interface comes from. Ask it to emit, read where it is, and animate your element out of that point. Use <code>place("aside")</code> when the user starts working, and bring it back when they tap it.</p>
+        <div class="code" data-snippet="emit"></div>
+      </li>
+      <li>
+        <h3>7. Use it from a framework</h3>
+        <p>Set object values like <code>progress</code> as properties and listen with <code>addEventListener</code>. React 19 passes objects and events straight through; React 18, Vue and Svelte notes are in the README. It is safe to import on a server, so Next.js works from a client component.</p>
+        <div class="code" data-snippet="react"></div>
+      </li>
+    </ol>
+
+    <p class="note">Reference: every attribute, property, method, event and number is in <a href="https://github.com/upadhyayprakash/noui-orb/blob/main/docs/SPEC.md">the spec</a>. Questions or a rough edge? <a href="https://github.com/upadhyayprakash/noui-orb/issues">Open an issue</a>.</p>
+  </section>
 
   <section class="vocab" aria-labelledby="vocabTitle">
     <h2 id="vocabTitle">Gesture vocabulary</h2>

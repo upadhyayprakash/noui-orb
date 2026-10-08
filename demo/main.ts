@@ -2,6 +2,7 @@
 // (properties, methods, events). Nothing is imported from the component's internals.
 import "../src/index";
 import type { GestureName, NouiOrbElement, OrbState } from "../src/index";
+import { SNIPPETS } from "./snippets";
 
 const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -29,6 +30,42 @@ const GESTURE_LABEL: Partial<Record<GestureName, string>> = {
   nod: "Got it", shake: "No", huh: "Didn't understand", hop: "Done", interrupt: "Go ahead", emit: "Here you go", point: "Look here",
 };
 const SEQ: Array<[OrbState, number | null]> = [["idle", 1.2], ["listening", 3.8], ["thinking", 2.4], ["working", null], ["speaking", 4.4], ["idle", 0]];
+
+// ---------------------------------------------------------------------------------------------
+// Get started: render the code samples with copy buttons
+// ---------------------------------------------------------------------------------------------
+document.querySelectorAll<HTMLElement>(".code[data-snippet]").forEach((el) => {
+  const text = SNIPPETS[el.dataset.snippet!] ?? "";
+  const pre = document.createElement("pre");
+  const code = document.createElement("code");
+  code.textContent = text;
+  pre.appendChild(code);
+  pre.tabIndex = 0; // long lines scroll; let keyboard users reach them
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "copy";
+  copy.textContent = "Copy";
+  copy.setAttribute("aria-label", `Copy the ${el.dataset.snippet} example`);
+  copy.addEventListener("click", () => {
+    const done = () => {
+      copy.textContent = "Copied";
+      setTimeout(() => (copy.textContent = "Copy"), 1400);
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, () => selectText(code));
+    } catch {
+      selectText(code);
+    }
+  });
+  el.append(pre, copy);
+});
+function selectText(node: Node): void {
+  const r = document.createRange();
+  r.selectNodeContents(node);
+  const sel = getSelection();
+  sel?.removeAllRanges();
+  sel?.addRange(r);
+}
 
 // ---------------------------------------------------------------------------------------------
 // Session: intro, outro, enabled controls

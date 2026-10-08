@@ -125,3 +125,18 @@ dd{margin:0;color:var(--muted);font-size:13.5px}
 noui-orb{position:absolute;inset:0;width:100%;height:100%}
 .stage{touch-action:manipulation}
 .card-slot{pointer-events:none}.card-slot .ui-card{pointer-events:auto}
+
+/* Get started */
+.guide h2{margin:0 0 8px;font:600 19px/1.25 var(--font-display)}
+.guide code,.top code{font:12.5px var(--font-mono);background:var(--stage);border-radius:5px;padding:1px 5px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:26px;max-width:760px}
+.steps li{display:grid;gap:8px;min-width:0}
+.steps h3{margin:0;font:600 16px/1.3 var(--font-display)}
+.steps p{margin:0;color:var(--muted);max-width:64ch;font-size:14px}
+.code{display:grid;gap:6px;min-width:0}
+.code pre{margin:0;padding:14px 16px;overflow-x:auto;font-variant-ligatures:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;font:12.5px/1.6 var(--font-mono);color:var(--fg);tab-size:2}
+.code pre code{background:none;padding:0;font:inherit;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+.copy{justify-self:end;order:-1;font:500 11px/1 var(--font-body);padding:6px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.copy:hover{border-color:var(--muted)}
+.top-links{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.top-links a,.guide a{color:var(--accent-ink)}

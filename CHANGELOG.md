@@ -8,3 +8,4 @@
 - README: quick start, microphone, and framework notes (React 19 verified).
 - Read-only `levels` property: the smoothed signal the orb is showing.
 - Interactive demo (`demo/`), built on the public API only, with Cloudflare Pages config (`wrangler.jsonc`, `_redirects`, `_headers`, `404.html`).
+- Demo: a "Get started" section with seven copyable code samples. The runnable ones are executed by the tests, so they can't drift from the API.
