@@ -83,11 +83,11 @@ Done 8 Oct 2026. Notes:
 
 ## M5 · First release
 
-- [ ] Set the version to `0.1.0`, update CHANGELOG, commit.
-- [ ] Run `npm pack --dry-run` and show the owner the file list and size.
-- [ ] **Owner:** in this folder, run `npm login`, then `npm publish --access public` and enter the one-time password. The package has to exist on npm before trusted publishing can be configured, so this first publish is manual.
+- [x] Set the version to `0.1.0`, update CHANGELOG, commit.
+- [x] Run `npm pack --dry-run` and show the owner the file list and size.
+- [x] **Owner:** in this folder, run `npm login`, then `npm publish --access public` and enter the one-time password. The package has to exist on npm before trusted publishing can be configured, so this first publish is manual.
 - [ ] **Owner:** on npmjs.com, open the package → Settings → Trusted publishing → GitHub Actions. Enter the GitHub owner, repository and workflow filename `release.yml`. A new trusted-publisher setup expires if it isn't used within about two days, so do the next step promptly.
-- [ ] Claude writes `release.yml`:
+- [x] Claude writes `release.yml` (the version below is the original plan; the real file uses `npm stage publish`, see the note):
 
   ```yaml
   name: release
@@ -114,9 +114,17 @@ Done 8 Oct 2026. Notes:
   ```
 
   Trusted publishing needs npm CLI 11.5.1 or later, Node 22.14 or later, `id-token: write`, and a GitHub-hosted runner. Provenance is added automatically for a public repo and public package. No `NODE_AUTH_TOKEN`.
-- [ ] Bump to `0.1.1` (a docs or README change is enough), commit, and ask the owner to approve pushing the `v0.1.1` tag.
+- [~] Bump to `0.1.1` (a docs or README change is enough), commit, and ask the owner to approve pushing the `v0.1.1` tag.
 - [ ] Confirm the release workflow published `0.1.1` and that the npm page shows provenance.
 - [ ] **Owner:** npm package → Settings → Publishing access → "Require two-factor authentication and disallow tokens".
+
+Notes (8 Oct 2026):
+
+- **0.1.0 is published** (approved by the owner) and verified from the registry in a clean project: imports in Node, types compile, a Vite bundle runs in Chromium. A `0.0.0-stage` placeholder version also exists on npm; `latest` is 0.1.0.
+- **Staged publishing.** npm held the first publish until the owner approved it with 2FA (`npm stage approve`). Per the npm docs a trusted publisher's allowed actions always include `npm stage publish`, while plain `npm publish` has to be allowed separately. So `release.yml` runs `npm stage publish`, and each release waits for the owner's approval. Whether provenance is recorded for a staged publish is not confirmed by the docs; the 0.1.1 run will show. Steps are in `docs/RELEASING.md`.
+- The `engines` field was dropped (a browser component should not restrict consumers' Node version).
+- 0.1.1 is prepared (README and demo no longer say "not on npm yet") and waits for the owner: configure the trusted publisher on npmjs.com (it expires after 2 days without a publish), approve pushing the `v0.1.1` tag, then `npm stage approve`.
+
 
 ## M6 · Adopt in noui.si
 

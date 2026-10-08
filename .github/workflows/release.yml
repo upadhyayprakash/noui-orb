@@ -1,0 +1,32 @@
+name: release
+
+# Pushing a tag like v0.1.1 stages that version on npm using trusted publishing (OIDC): no token is stored
+# anywhere. Staging does not make it public. The owner approves it with 2FA: npm stage list, then
+# npm stage approve <id> (see docs/RELEASING.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later; staging needs a newer one still.
+      - run: npm install -g npm@latest
+      - name: The tag must match the version in package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run size
+      - run: npm stage publish

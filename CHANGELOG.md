@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.1 - 2026-10-08
+
+Docs only: the README and the demo no longer say the package is unpublished. First release made through the tag-triggered workflow.
+
 ## 0.1.0 - 2026-10-08
 
 First release. An early, scripted prototype: it draws and reacts to audio, it does not understand speech.

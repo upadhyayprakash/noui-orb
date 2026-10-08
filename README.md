@@ -6,7 +6,7 @@
 
 **Try it:** https://noui-orb-demo.pages.dev/lab/orb/ (it will also live at https://noui.si/lab/orb/). The demo has a Get started walkthrough and runs on the public API only.
 
-**Status: early, not yet published to npm.** The install commands below work once `0.1.0` is out. It is a scripted early release: it draws and reacts, it does not understand speech. Your app listens and thinks and tells the orb what is happening. The full reference is [`docs/SPEC.md`](docs/SPEC.md).
+**Status: early release (0.1.x).** It is a scripted prototype: it draws and reacts to audio, it does not understand speech. Your app listens and thinks and tells the orb what is happening. Tested in Chrome and Safari; not yet in Firefox. The full reference is [`docs/SPEC.md`](docs/SPEC.md).
 
 ## Quick start
 
