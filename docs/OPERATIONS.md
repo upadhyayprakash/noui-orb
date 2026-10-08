@@ -3,7 +3,7 @@
 How **noui.si**, the **noui-orb** component and the **@nouisi/orb** npm package are hosted, built, deployed and released, written so a junior engineer can read it top to bottom, then come back later to fix something in production.
 
 - **Last updated:** 9 Oct 2026.
-- **Status of the domain move:** done on 8 Oct 2026. `noui.si`, `www.noui.si` and `noui.si/lab/orb/` are served by Cloudflare Pages, and the old GitHub Pages workflow is removed. Two owner steps remain: unpublish GitHub Pages and make the site repo private. Anything marked **(pending)** below refers to those. See [10. The domain move, step by step](#10-the-domain-move-step-by-step).
+- **Status of the domain move:** finished on 8 to 9 Oct 2026. `noui.si`, `www.noui.si` and `noui.si/lab/orb/` are served by Cloudflare Pages, GitHub Pages is unpublished, the site repo is private, and a full branch, pull request, preview, production and cleanup cycle was tested from the private repo. The only loose end is resolvers that still hold the old DNS answer for a while (see section 4). See [10. The domain move, step by step](#10-the-domain-move-step-by-step).
 - **No secrets in this file.** Nothing here is a password, token or key, and none are stored in either repo (we checked: both repos have zero GitHub secrets and zero variables). Keep it that way.
 
 **How to read this.** If you are new: read sections 1 to 3 once, skim 4 to 9, and keep 11 (debugging) and 12 (cookbook) open when something breaks. Statements are marked **Verified** when we actually observed them in this project, and **Per docs** when they come from official documentation we read but did not try ourselves.
@@ -85,8 +85,8 @@ There are **two GitHub repositories**, **one npm package**, **two Cloudflare Pag
 | DNS for noui.si | OpusDNS parking DNS | Cloudflare |
 | `noui.si/lab/orb/` | did not exist | proxied to the demo project, live |
 | Demo link people use | `https://noui-orb-demo.pages.dev/lab/orb/` | `https://noui.si/lab/orb/` |
-| GitHub Pages for the site repo | serving the site | still enabled but unused; the owner unpublishes it **(pending)** |
-| Site repo visibility | public | public until the owner makes it private **(pending)** |
+| GitHub Pages for the site repo | serving the site | unpublished, custom domain removed |
+| Site repo visibility | public | private |
 
 ---|---|---|
 | noui.si served by | GitHub Pages | Cloudflare Pages (`noui-site`) |
@@ -450,13 +450,13 @@ Goal: serve noui.si from Cloudflare Pages, put the demo at `noui.si/lab/orb/`, t
 | 7 | Check `https://noui.si` (header `server: cloudflare`), then `/lab/orb/` including the microphone | Claude + Owner | Done. Checked in real Chromium, on the owner's Mac and phone; HTTP redirects to HTTPS. |
 | 8 | Optional: redirect `www` to the apex with a Cloudflare Redirect Rule (pages already declare `noui.si` as canonical) | Owner | Not done: `www` serves the same site |
 | 9a | Remove `.github/workflows/deploy.yml` and `public/CNAME` from the site repo; delete the merged `cloudflare-pages` branch | Claude | Done (commit `7d442ea` in the site repo) |
-| 9b | Unpublish GitHub Pages (site repo, Settings, Pages). Do this only after the stale-DNS window is over and phones and laptops on other networks show the new site | Owner | **Pending** |
-| 10 | Make the `noui` repo private (Settings, Danger zone). The Cloudflare GitHub app keeps its access | Owner | **Pending** |
+| 9b | Unpublish GitHub Pages and remove its custom domain (site repo, Settings, Pages). Best done only after the stale-DNS window is over | Owner | Done on 9 Oct. Done slightly early: a resolver that still held the old DNS answer (the owner's home router) briefly got a 404 |
+| 10 | Make the `noui` repo private (Settings, Danger zone). The Cloudflare GitHub app keeps its access | Owner | Done. Verified: a branch preview, a pull request merge and a production deploy all built from the private repo |
 | 11 | Update `homepage`/links to the final `noui.si/lab/orb/` URL and re-check everything | Claude | Done for the demo links and share image; re-check after step 10 |
 
-**Rollback (until step 9b):** set the nameservers back to the OpusDNS ones at the registrar. It restores the old setup within the record TTL, because GitHub Pages is still enabled (it would serve the version deployed on 8 Oct). After 9b a rollback would mean a 404 for anyone on the old path.
+**Rollback:** only possible before step 9b, which is now past. Today a rollback would mean re-enabling GitHub Pages, which needs the repo public again on the free plan. Treat the Cloudflare setup as the only path and fix forward.
 
-**Lessons from the move:** (1) read-only inventory first paid off: no email records, no DNSSEC. (2) Keep the old setup alive until every resolver has moved. (3) Test with `/cdn-cgi/trace` and with real resolvers (`dig @1.1.1.1`), not only your own machine, whose resolver can be hours stale. (4) A Cloudflare Pages project can silently lose its GitHub connection: check the Deployments tab and the commit's check runs after any push.
+**Lessons from the move:** (0) do not unpublish the old host until the stale window is clearly over: it happened about an hour in, and resolvers that still cached the old answer got a 404. (1) read-only inventory first paid off: no email records, no DNSSEC. (2) Keep the old setup alive until every resolver has moved. (3) Test with `/cdn-cgi/trace` and with real resolvers (`dig @1.1.1.1`), not only your own machine, whose resolver can be hours stale. (4) A Cloudflare Pages project can silently lose its GitHub connection: check the Deployments tab and the commit's check runs after any push.
 
 **After step 10, verify:** a push to `noui` `main` still builds on Cloudflare; the `noui-orb` repo is still public and unaffected.
 
@@ -603,7 +603,6 @@ git commit --allow-empty -m "Trigger build" && git push
 
 Honest list as of 8 Oct 2026.
 
-- **Two owner steps are left from the domain move:** unpublish GitHub Pages and make the site repo private (see [10](#10-the-domain-move-step-by-step)). Update the sections marked pending when they are done.
 - **`www.noui.si` is not redirected** to the apex; it serves the same site. Pages declare `noui.si` as canonical, so this is cosmetic.
 - **Microphone latency (SPEC 16):** the "reacts within 50 ms" target is not measured, and iOS is not confirmed. Chrome and Safari were confirmed by the owner on the deployed demo.
 - **Approved logo artwork** is not in the orb yet. The hand-off alignment (within 1 px at 640 px) is verified with the placeholder mark only. Milestone M6 adopts the orb in noui.si and brings the real artwork.

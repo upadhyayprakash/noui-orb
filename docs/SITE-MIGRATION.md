@@ -66,4 +66,4 @@ Prepared in the site repo on branch `cloudflare-pages` (not pushed): `functions/
 
 Done: steps 1 to 8 of the runbook, and 9a (the GitHub Pages workflow and `CNAME` removed from the site repo, the merged `cloudflare-pages` branch deleted). `noui.si`, `www.noui.si` and `noui.si/lab/orb/` are served by Cloudflare Pages; HTTP redirects to HTTPS; the demo proxy works on the live domain including the microphone.
 
-Left for the owner: **9b** unpublish GitHub Pages once the stale-DNS window is clearly over, then **10** make the `noui` repo private. See `docs/OPERATIONS.md` section 10 for the current status table, the rollback and the lessons learned.
+Update 9 Oct 2026: **9b** (GitHub Pages unpublished, custom domain removed) and **10** (the `noui` repo is private) are done, and a branch, pull request, preview, production and cleanup cycle was tested from the private repo. The move is finished; the only tail is resolvers that still hold the old DNS answer for a while. See `docs/OPERATIONS.md` section 10 for the status table and the lessons learned.
