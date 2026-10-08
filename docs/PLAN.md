@@ -29,14 +29,22 @@ Agreed on 8 Oct 2026 unless marked "confirm".
 
 Port in this order, each with unit tests where the logic is pure:
 
-- [ ] `renderer/`: WebGL setup and the shader from the prototype, unchanged; resize with the DPR caps; CSS fallback with `orb-fallback`.
-- [ ] `signals/`: analyser features and envelope (SPEC §7), including the three microphone fixes in §7.3; `attachInput`, `attachOutput`, `setLevels`.
-- [ ] `ring.ts`: four modes, steps from `progress`, completion behaviour (SPEC §6).
-- [ ] State targets and easing (SPEC §5); accessible names.
-- [ ] `character.ts`: sub-stepped springs, lean, pointer, all gestures, wait, rate limit, events (SPEC §8).
-- [ ] Placement and `originRect()` (SPEC §9); `aside` as a button firing `orb-recall`.
-- [ ] `intro.ts` and `mark.ts`: timeline from SPEC §10, hand-off geometry computed from the mark.
-- [ ] Reduced motion and off-screen/hidden pausing (SPEC §8.3, §14).
+- [x] `renderer/`: WebGL setup and the shader from the prototype, unchanged; resize with the DPR caps; CSS fallback with `orb-fallback`.
+- [x] `signals/`: analyser features and envelope (SPEC §7), including the three microphone fixes in §7.3; `attachInput`, `attachOutput`, `setLevels`.
+- [x] `ring.ts`: four modes, steps from `progress`, completion behaviour (SPEC §6).
+- [x] State targets and easing (SPEC §5); accessible names.
+- [x] `character.ts`: sub-stepped springs, lean, pointer, all gestures, wait, rate limit, events (SPEC §8).
+- [x] Placement and `originRect()` (SPEC §9); `aside` as a button firing `orb-recall`.
+- [x] `intro.ts` and `mark.ts`: timeline from SPEC §10, hand-off geometry computed from the mark.
+- [x] Reduced motion and off-screen/hidden pausing (SPEC §8.3, §14).
+
+Done 8 Oct 2026. Notes:
+
+- Shader ported byte for byte (extracted by script from the prototype). Ambiguities in the spec are resolved in SPEC §3.4.
+- 66 unit tests (springs at 15 and 60 fps follow the same trajectory, envelope, features, ring, placement, intro frames, hand-off numbers, frame guard) and 22 Playwright tests (events, rate limit, interrupt, aside and recall, reduced motion, fallback, silence detection, off-screen pausing, hand-off within 1 px at 640 px).
+- Bundle: about 16 KB min+gzip of the 25 KB budget.
+- `demo/` holds only a small dev harness. The control panel is M3. For the meters it will need the live levels; the public API has no getter for them, so M3 either computes them in the demo or adds a read-only `levels` property to SPEC §3 first.
+- Not verified here: Safari and Firefox, a real microphone, a real GPU (all rendering was in headless Chromium with software GL).
 
 ## M3 · Demo at noui.si/lab/orb
 

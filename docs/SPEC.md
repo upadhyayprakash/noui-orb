@@ -142,6 +142,26 @@ All events bubble, are composed, and carry `detail`.
 | `orb-input-silent` | `{ seconds }` | Input attached, state `listening`, loudness under 0.03 for 4 s. Fires once until loudness recovers. |
 | `orb-fallback` | `{ reason }` | WebGL unavailable; the CSS fallback is in use. |
 
+### 3.4 Clarifications settled while building (M2)
+
+These resolve places where §3 to §14 were ambiguous. Code and spec agree on all of them.
+
+- **`gestures`** is a plain boolean attribute: present means on, absent means off (§8.3). `document.createElement` users set `el.gestures = true`.
+- **`intro`**: `auto` plays the intro on first connect, `none` starts as the orb, `manual` (default) starts as the complete logo with the orb hidden and nothing animating until `intro()` is called. The intro always lands at `center`, then moves to the requested `placement` if it differs.
+- **Rejections.** `gesture()` rejects with the string `"suppressed"` (not an `Error`), so hosts should `.catch(() => {})` calls they don't need. An unknown gesture name rejects with a `TypeError`.
+- **Effects that don't depend on motion still happen.** `interrupt` switches `speaking` to `listening`, and `emit` moves the orb to `room` (unless `aside`), even when the gesture itself is suppressed (gestures off, reduced motion, rate limit). The promise still rejects. This keeps the host's state machine correct in every mode.
+- **`point`** `duration` is in **milliseconds**, default 1800. With no target it reuses the last one, and does nothing if there never was one.
+- **Not animating.** If the element can't animate (off-screen, hidden tab), `gesture()` resolves immediately, and `place()` jumps to the placement and resolves.
+- **`setLevels`** values older than 300 ms are ignored. Fresh pushed levels take precedence over an attached analyser on the same channel.
+- **`orb-input-silent`** applies to an attached input or fresh pushed input levels. It re-arms when loudness rises above 0.15. When a track ends, the input is detached and the event fires with `seconds: 0`.
+- **Pointer lean** divides by half the box width times the placement scale (as the prototype does), minimum 40 px, not by the 39% orb radius. The pointer is tracked on `window`, so the orb leans toward the pointer anywhere on the page.
+- **Pointer events.** The host has `pointer-events: none` and only the orb itself receives them, so an `aside` orb never blocks the interface under its box. Click, Enter and Space on the `aside` orb fire `orb-recall`.
+- **Reduced motion** also turns placement moves into a 200 ms ease-out (no spring overshoot).
+- **Ring.** The segment count (up to 8, from `progress.steps`) only changes while the gaps are closed or the ring is invisible, so it never jumps. Without `progress`, `working` shows the spinning arc.
+- **Frame-time guard** compiles a one-octave variant of the shader on first use (the loop bound of `fbm` changes from 2 to 1); the shader source is otherwise byte-identical to the prototype's.
+- **Colours** come from CSS custom properties with fallbacks, settable anywhere above the element: `--orb-accent`, `--orb-mark-ink`, `--orb-ring`, `--orb-ring-track`, `--orb-ring-broken`. The orb's own colours are not themeable.
+- **The `config` getter** returns a copy; assign a partial to change it. Unknown keys and non-finite numbers are ignored.
+
 ---
 
 ## 4. Visual spec
@@ -498,7 +518,7 @@ Keep §5–§10 as the shared contract. Port the shader to Metal (iOS) and AGSL 
 ## 17. Open questions
 
 1. **Approved logo paths.** Swap in the final artwork and confirm the o's centre and radius (§10.1).
-2. **`aside` position on phones.** Top left may collide with the browser's or app's navigation; bottom right may suit thumbs better.
-3. **Gesture set for v1.** Ship all eight, or start with nod, hop, interrupt, emit and point and add the rest after watching real sessions.
+2. ~~**`aside` position on phones.**~~ Decided 8 Oct 2026: top left, as specified.
+3. ~~**Gesture set for v1.**~~ Decided 8 Oct 2026: all eight.
 4. **Hinglish speech recognition.** This is outside the component, but it decides how often `huh` fires.
 5. **Idle frame rate.** Consider dropping to 30 fps in `idle` and `wait` to save battery.

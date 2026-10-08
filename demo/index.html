@@ -3,10 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>noui-orb demo</title>
+    <title>noui-orb dev harness</title>
+    <style>
+      body { margin: 0; font: 14px system-ui, sans-serif; background: #f1f0ee; color: #1b1917; }
+      @media (prefers-color-scheme: dark) { body { background: #131211; color: #f2efeb; } }
+      main { max-width: 760px; margin: 0 auto; padding: 16px; display: grid; gap: 12px; }
+      noui-orb { width: min(100%, 560px); margin: 0 auto; background: #e9e7e4; border-radius: 24px; }
+      @media (prefers-color-scheme: dark) { noui-orb { background: #1a1918; } }
+      .row { display: flex; gap: 6px; flex-wrap: wrap; }
+      button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid #8884; background: transparent; color: inherit; cursor: pointer; }
+      pre { margin: 0; font-size: 12px; min-height: 3em; white-space: pre-wrap; }
+    </style>
   </head>
   <body>
-    <noui-orb></noui-orb>
+    <main>
+      <noui-orb id="orb" gestures intro="manual"></noui-orb>
+      <div class="row" id="states"></div>
+      <div class="row" id="gestures"></div>
+      <div class="row" id="misc"></div>
+      <pre id="log"></pre>
+    </main>
+    <script>
+      // Harness options: ?intro=none|auto|manual and ?sim=1 (simulated voice levels).
+      document.getElementById("orb").setAttribute("intro", new URLSearchParams(location.search).get("intro") || "manual");
+    </script>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

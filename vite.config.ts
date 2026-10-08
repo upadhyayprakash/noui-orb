@@ -7,7 +7,7 @@ export default defineConfig({
       entry: { index: "src/index.ts", element: "src/element.ts" },
       formats: ["es"],
     },
-    rollupOptions: { output: { chunkFileNames: "[name].js" } },
+    rollupOptions: { output: { chunkFileNames: "chunk-[hash].js" } },
   },
   test: { include: ["src/**/*.test.ts"] },
 });
